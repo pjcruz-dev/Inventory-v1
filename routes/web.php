@@ -44,6 +44,38 @@ Route::group(['middleware' => 'auth'], function () {
 	Route::get('user-management', function () {
 		return view('laravel-examples/user-management');
 	})->name('user-management');
+	
+	// User CRUD Routes
+	Route::resource('users', App\Http\Controllers\UserController::class);
+	Route::get('users/{user}/reset-password', [App\Http\Controllers\UserController::class, 'resetPassword'])->name('users.reset-password');
+	Route::put('users/{user}/update-password', [App\Http\Controllers\UserController::class, 'updatePassword'])->name('users.update-password');
+	
+	// Role and Permission Routes
+	Route::resource('roles', App\Http\Controllers\RoleController::class);
+	Route::resource('permissions', App\Http\Controllers\PermissionController::class);
+
+	// Asset Management Routes
+	Route::resource('asset-types', App\Http\Controllers\AssetTypeController::class);
+	Route::resource('assets', App\Http\Controllers\AssetController::class);
+	Route::resource('peripherals', App\Http\Controllers\PeripheralController::class);
+	Route::resource('asset-transfers', App\Http\Controllers\AssetTransferController::class);
+	Route::resource('print-logs', App\Http\Controllers\PrintLogController::class);
+
+	// Asset Transfer Specific Routes
+	Route::put('asset-transfers/{assetTransfer}/complete', [App\Http\Controllers\AssetTransferController::class, 'completeTransfer'])->name('asset-transfers.complete');
+
+	// Print Asset Routes
+	Route::get('assets/{asset}/print', [App\Http\Controllers\PrintLogController::class, 'printAsset'])->name('assets.print');
+
+	// Audit Trail Routes
+	Route::get('audit-trail', [App\Http\Controllers\AuditTrailController::class, 'index'])->name('audit-trail.index');
+	Route::get('audit-trail/{auditTrail}', [App\Http\Controllers\AuditTrailController::class, 'show'])->name('audit-trail.show');
+
+	// Import/Export Routes
+	Route::get('import-export/import', [App\Http\Controllers\ImportExportController::class, 'importForm'])->name('import.form');
+	Route::post('import-export/import', [App\Http\Controllers\ImportExportController::class, 'import'])->name('import.process');
+	Route::get('import-export/export', [App\Http\Controllers\ImportExportController::class, 'export'])->name('export.assets');
+	Route::get('import-export/template', [App\Http\Controllers\ImportExportController::class, 'downloadTemplate'])->name('export.template');
 
 	Route::get('tables', function () {
 		return view('tables');
