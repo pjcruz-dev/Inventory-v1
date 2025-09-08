@@ -13,7 +13,7 @@
             <div class="col-auto my-auto">
                 <div class="h-100">
                     <h5 class="mb-1">User Management</h5>
-                    <p class="mb-0 text-sm">Manage system users, roles, and permissions</p>
+                    <p class="mb-0 text-sm">Manage system users</p>
                 </div>
             </div>
         </div>
@@ -66,8 +66,7 @@
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
                                         Location
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
-                                        Roles
+                                    
                                     </th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
                                         Created At
@@ -101,7 +100,7 @@ $(document).ready(function() {
             { data: 'name', name: 'name' },
             { data: 'email', name: 'email' },
             { data: 'location', name: 'location' },
-            { data: 'roles_list', name: 'roles_list', orderable: false, searchable: false },
+
             { data: 'created_at', name: 'created_at' },
             { data: 'actions', name: 'actions', orderable: false, searchable: false }
         ],

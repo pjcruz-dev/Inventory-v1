@@ -12,8 +12,7 @@ use Illuminate\Http\Request;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
+
 use Mockery;
 
 class AssetTransferControllerTest extends TestCase
@@ -28,19 +27,9 @@ class AssetTransferControllerTest extends TestCase
     {
         parent::setUp();
         
-        // Create permissions
-        Permission::create(['name' => 'view-asset-transfers']);
-        Permission::create(['name' => 'create-asset-transfer']);
-        Permission::create(['name' => 'edit-asset-transfer']);
-        Permission::create(['name' => 'delete-asset-transfer']);
-        
-        // Create role with permissions
-        $role = Role::create(['name' => 'admin']);
-        $role->givePermissionTo(['view-asset-transfers', 'create-asset-transfer', 'edit-asset-transfer', 'delete-asset-transfer']);
-        
-        // Create user and assign role
+        // Create user for testing
         $this->user = User::factory()->create();
-        $this->user->assignRole('admin');
+
         
         // Mock AuditService
         $this->auditService = Mockery::mock(AuditService::class);
@@ -310,40 +299,7 @@ class AssetTransferControllerTest extends TestCase
         $this->assertDatabaseMissing('asset_transfers', ['id' => $transfer->id]);
     }
 
-    /** @test */
-    public function it_requires_proper_permissions_for_actions()
-    {
-        // Create user without permissions
-        $userWithoutPermissions = User::factory()->create();
-        
-        $transfer = AssetTransfer::factory()->create();
-        
-        $this->actingAs($userWithoutPermissions);
-        
-        // Test view permission
-        $response = $this->get(route('asset-transfers.index'));
-        $response->assertStatus(403);
-        
-        // Test create permission
-        $response = $this->get(route('asset-transfers.create'));
-        $response->assertStatus(403);
-        
-        // Test store permission
-        $response = $this->post(route('asset-transfers.store'), ['asset_id' => 1]);
-        $response->assertStatus(403);
-        
-        // Test edit permission
-        $response = $this->get(route('asset-transfers.edit', $transfer));
-        $response->assertStatus(403);
-        
-        // Test update permission
-        $response = $this->put(route('asset-transfers.update', $transfer), ['status' => 'completed']);
-        $response->assertStatus(403);
-        
-        // Test delete permission
-        $response = $this->delete(route('asset-transfers.destroy', $transfer));
-        $response->assertStatus(403);
-    }
+
 
     /** @test */
     public function it_handles_json_responses_for_ajax_requests()

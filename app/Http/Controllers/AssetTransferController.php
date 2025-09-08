@@ -18,10 +18,7 @@ class AssetTransferController extends Controller
     public function __construct(AuditService $auditService)
     {
         $this->auditService = $auditService;
-        $this->middleware('permission:view-asset-transfers', ['only' => ['index', 'show']]);
-        $this->middleware('permission:create-asset-transfer', ['only' => ['create', 'store']]);
-        $this->middleware('permission:edit-asset-transfer', ['only' => ['edit', 'update']]);
-        $this->middleware('permission:delete-asset-transfer', ['only' => ['destroy']]);
+
     }
 
     /**
@@ -75,18 +72,9 @@ class AssetTransferController extends Controller
                 $actions .= '<i class="fa fa-ellipsis-v"></i>';
                 $actions .= '</button>';
                 $actions .= '<ul class="dropdown-menu dropdown-menu-end">';
-                
-                if (auth()->user()->can('view-asset-transfers')) {
-                    $actions .= '<li><a class="dropdown-item" href="' . route('asset-transfers.show', $transfer->id) . '"><i class="fas fa-eye me-2"></i> View</a></li>';
-                }
-                
-                if (auth()->user()->can('edit-asset-transfer')) {
-                    $actions .= '<li><a class="dropdown-item" href="' . route('asset-transfers.edit', $transfer->id) . '"><i class="fas fa-share me-2"></i> Edit Transfer</a></li>';
-                }
-                
-                if (auth()->user()->can('delete-asset-transfer')) {
-                    $actions .= '<li><button type="button" class="dropdown-item" onclick="deleteAssetTransfer(' . $transfer->id . ')"><i class="fas fa-trash me-2"></i> Delete</button></li>';
-                }
+                $actions .= '<li><a class="dropdown-item" href="' . route('asset-transfers.show', $transfer->id) . '"><i class="fas fa-eye me-2"></i> View</a></li>';
+                $actions .= '<li><a class="dropdown-item" href="' . route('asset-transfers.edit', $transfer->id) . '"><i class="fas fa-share me-2"></i> Edit Transfer</a></li>';
+                $actions .= '<li><button type="button" class="dropdown-item" onclick="deleteAssetTransfer(' . $transfer->id . ')"><i class="fas fa-trash me-2"></i> Delete</button></li>';
                 
                 $actions .= '</ul>';
                 $actions .= '</div>';

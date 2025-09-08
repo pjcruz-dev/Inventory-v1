@@ -44,14 +44,8 @@ class LocationController extends Controller
                 $actions .= '</button>';
                 $actions .= '<ul class="dropdown-menu dropdown-menu-end">';
                 $actions .= '<li><a class="dropdown-item" href="' . route('locations.show', $location->id) . '"><i class="fas fa-eye me-2"></i> View</a></li>';
-                
-                if (auth()->user()->can('update', $location)) {
-                    $actions .= '<li><a class="dropdown-item" href="' . route('locations.edit', $location->id) . '"><i class="fas fa-edit me-2"></i> Edit</a></li>';
-                }
-                
-                if (auth()->user()->can('delete', $location)) {
-                    $actions .= '<li><button type="button" class="dropdown-item" onclick="deleteLocation(' . $location->id . ')"><i class="fas fa-trash me-2"></i> Delete</button></li>';
-                }
+                $actions .= '<li><a class="dropdown-item" href="' . route('locations.edit', $location->id) . '"><i class="fas fa-edit me-2"></i> Edit</a></li>';
+                $actions .= '<li><button type="button" class="dropdown-item" onclick="deleteLocation(' . $location->id . ')"><i class="fas fa-trash me-2"></i> Delete</button></li>';
                 
                 $actions .= '</ul>';
                 $actions .= '</div>';

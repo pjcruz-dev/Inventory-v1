@@ -28,12 +28,7 @@ class InfoUserController extends Controller
         ]);
         if($request->get('email') != Auth::user()->email)
         {
-            if(env('IS_DEMO') && Auth::user()->id == 1)
-            {
-                return redirect()->back()->withErrors(['msg2' => 'You are in a demo version, you can\'t change the email address.']);
-                
-            }
-            
+            // Email validation will be handled below
         }
         else{
             $attribute = request()->validate([

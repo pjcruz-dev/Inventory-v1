@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
-use Spatie\Permission\Models\Role;
+
 use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
@@ -33,12 +33,9 @@ class UserController extends Controller
      */
     private function getUsersDataTable()
     {
-        $users = User::with('roles')->select('users.*');
+        $users = User::select('users.*');
 
         return DataTables::of($users)
-            ->addColumn('roles_list', function ($user) {
-                return $user->roles->pluck('name')->implode(', ');
-            })
             ->addColumn('actions', function ($user) {
                 $actions = '<div class="dropdown">';
                 $actions .= '<button class="btn btn-sm btn-icon-only text-dark mb-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">';
@@ -46,15 +43,10 @@ class UserController extends Controller
                 $actions .= '</button>';
                 $actions .= '<ul class="dropdown-menu dropdown-menu-end">';
                 
-                if (auth()->user()->can('view-users')) {
-                    $actions .= '<li><a class="dropdown-item" href="' . route('users.show', $user->id) . '"><i class="fas fa-eye me-2"></i>View</a></li>';
-                }
+                $actions .= '<li><a class="dropdown-item" href="' . route('users.show', $user->id) . '"><i class="fas fa-eye me-2"></i>View</a></li>';
+                $actions .= '<li><a class="dropdown-item" href="' . route('users.edit', $user->id) . '"><i class="fas fa-edit me-2"></i>Edit</a></li>';
                 
-                if (auth()->user()->can('edit-users')) {
-                    $actions .= '<li><a class="dropdown-item" href="' . route('users.edit', $user->id) . '"><i class="fas fa-edit me-2"></i>Edit</a></li>';
-                }
-                
-                if (auth()->user()->can('delete-users') && $user->id !== auth()->id()) {
+                if ($user->id !== auth()->id()) {
                     $actions .= '<li><hr class="dropdown-divider"></li>';
                     $actions .= '<li><a class="dropdown-item text-danger" href="#" onclick="deleteUser(' . $user->id . ')"><i class="fas fa-trash me-2"></i>Delete</a></li>';
                 }
@@ -76,8 +68,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        $roles = Role::all();
-        return view('users.create', compact('roles'));
+        return view('users.create');
     }
 
     /**
@@ -89,37 +80,22 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        // Ensure only admins can create users
-        if (!auth()->user()->hasPermissionTo('manage-users')) {
-            abort(403, 'Unauthorized. Only administrators can create user accounts.');
-        }
-
         $attributes = $request->validate(User::validationRules());
-        $request->validate([
-            'roles' => ['required', 'array'],
-        ]);
 
         $attributes['password'] = Hash::make($attributes['password']);
         
         $user = User::create($attributes);
-        
-        // Only admins can assign roles
-        if ($request->has('roles') && is_array($request->roles)) {
-            // Convert role IDs to role names for syncRoles method
-            $roleNames = Role::whereIn('id', $request->roles)->pluck('name')->toArray();
-            $user->syncRoles($roleNames);
-        }
 
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'User account created successfully by administrator',
+                'message' => 'User account created successfully',
                 'redirect' => route('users.index')
             ]);
         }
 
         return redirect()->route('users.index')
-            ->with('success', 'User account created successfully by administrator');
+            ->with('success', 'User account created successfully');
     }
 
     /**
@@ -142,14 +118,7 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        // Ensure only admins can edit users
-        if (!auth()->user()->hasPermissionTo('manage-users')) {
-            abort(403, 'Unauthorized. Only administrators can edit user accounts.');
-        }
-
-        $roles = Role::all();
-        $userRoles = $user->roles->pluck('id')->toArray();
-        return view('users.edit', compact('user', 'roles', 'userRoles'));
+        return view('users.edit', compact('user'));
     }
 
     /**
@@ -162,15 +131,7 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        // Ensure only admins can update users
-        if (!auth()->user()->hasPermissionTo('manage-users')) {
-            abort(403, 'Unauthorized. Only administrators can update user accounts.');
-        }
-
         $attributes = $request->validate(User::validationRules($user->id));
-        $request->validate([
-            'roles' => ['required', 'array'],
-        ]);
         
         // Only update password if provided
         if ($request->filled('password')) {
@@ -181,24 +142,17 @@ class UserController extends Controller
         }
 
         $user->update($attributes);
-        
-        // Only admins can assign/change roles
-        if ($request->has('roles') && is_array($request->roles)) {
-            // Convert role IDs to role names for syncRoles method
-            $roleNames = Role::whereIn('id', $request->roles)->pluck('name')->toArray();
-            $user->syncRoles($roleNames);
-        }
 
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'User updated successfully by administrator',
+                'message' => 'User updated successfully',
                 'redirect' => route('users.index')
             ]);
         }
 
         return redirect()->route('users.index')
-            ->with('success', 'User updated successfully by administrator');
+            ->with('success', 'User updated successfully');
     }
 
     /**
@@ -211,11 +165,6 @@ class UserController extends Controller
      */
     public function destroy(Request $request, User $user)
     {
-        // Ensure only admins can delete users
-        if (!auth()->user()->hasPermissionTo('manage-users')) {
-            abort(403, 'Unauthorized. Only administrators can delete user accounts.');
-        }
-
         // Prevent deleting your own account
         if ($user->id === Auth::id()) {
             if ($request->expectsJson()) {
@@ -233,13 +182,13 @@ class UserController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'User deleted successfully by administrator',
+                'message' => 'User deleted successfully',
                 'redirect' => route('users.index')
             ]);
         }
 
         return redirect()->route('users.index')
-            ->with('success', 'User deleted successfully by administrator');
+            ->with('success', 'User deleted successfully');
     }
 
     /**

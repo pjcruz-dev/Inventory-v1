@@ -18,10 +18,7 @@ class AssetController extends Controller
     public function __construct(AuditService $auditService)
     {
         $this->auditService = $auditService;
-        $this->middleware('permission:view-assets', ['only' => ['index', 'show']]);
-        $this->middleware('permission:create-asset', ['only' => ['create', 'store']]);
-        $this->middleware('permission:edit-asset', ['only' => ['edit', 'update']]);
-        $this->middleware('permission:delete-asset', ['only' => ['destroy']]);
+
     }
 
     /**
@@ -71,15 +68,8 @@ class AssetController extends Controller
                 $actions .= '</button>';
                 $actions .= '<ul class="dropdown-menu dropdown-menu-end">';
                 $actions .= '<li><a class="dropdown-item" href="' . route('assets.show', $asset->id) . '"><i class="fas fa-eye me-2"></i> View</a></li>';
-                
-                if (auth()->user()->can('edit-asset')) {
-                    $actions .= '<li><a class="dropdown-item" href="' . route('assets.edit', $asset->id) . '"><i class="fas fa-edit me-2"></i> Edit</a></li>';
-                }
-                
-                if (auth()->user()->can('delete-asset')) {
-                    $actions .= '<li><button type="button" class="dropdown-item" onclick="deleteAsset(' . $asset->id . ')"><i class="fas fa-trash me-2"></i> Delete</button></li>';
-                }
-                
+                $actions .= '<li><a class="dropdown-item" href="' . route('assets.edit', $asset->id) . '"><i class="fas fa-edit me-2"></i> Edit</a></li>';
+                $actions .= '<li><button type="button" class="dropdown-item" onclick="deleteAsset(' . $asset->id . ')"><i class="fas fa-trash me-2"></i> Delete</button></li>';
                 $actions .= '</ul>';
                 $actions .= '</div>';
                 

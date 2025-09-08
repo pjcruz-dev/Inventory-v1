@@ -146,25 +146,7 @@
                         </div>
                     </div>
                     
-                    <div class="form-group mt-4">
-                        <label for="roles" class="form-control-label">Assign Roles</label>
-                        <div class="@error('roles')border border-danger rounded-3 @enderror">
-                            <div class="row">
-                                @foreach($roles as $role)
-                                <div class="col-md-3 mb-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="roles[]" value="{{ $role->id }}" id="role_{{ $role->id }}" 
-                                            {{ in_array($role->id, old('roles', $userRoles)) ? 'checked' : '' }}>
-                                        <label class="custom-control-label" for="role_{{ $role->id }}">{{ $role->name }}</label>
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
-                            @error('roles')
-                                <p class="text-danger text-xs mt-2">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
+
                     
                     <div class="d-flex justify-content-end mt-4">
                         <button type="button" class="btn btn-light me-3" onclick="ModalHandler.showCancelModal('{{ route('users.index') }}')">Cancel</button>
