@@ -6,8 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
+
 
 class AuthenticationTest extends TestCase
 {
@@ -17,16 +16,7 @@ class AuthenticationTest extends TestCase
     {
         parent::setUp();
         
-        // Create basic permissions and roles
-        Permission::create(['name' => 'view-dashboard']);
-        Permission::create(['name' => 'view-users']);
-        Permission::create(['name' => 'view-assets']);
-        
-        $adminRole = Role::create(['name' => 'admin']);
-        $userRole = Role::create(['name' => 'user']);
-        
-        $adminRole->givePermissionTo(['view-dashboard', 'view-users', 'view-assets']);
-        $userRole->givePermissionTo(['view-dashboard', 'view-assets']);
+        // Basic test setup without roles/permissions
     }
 
     /** @test */
@@ -89,7 +79,7 @@ class AuthenticationTest extends TestCase
     public function authenticated_user_can_access_dashboard()
     {
         $user = User::factory()->create();
-        $user->assignRole('user');
+
         
         $this->actingAs($user);
         
@@ -107,13 +97,9 @@ class AuthenticationTest extends TestCase
     }
 
     /** @test */
-    public function user_with_admin_role_can_access_user_management()
+    public function user_can_access_user_management()
     {
         $admin = User::factory()->create();
-        $admin->assignRole('admin');
-        
-        Permission::create(['name' => 'view-users']);
-        Role::findByName('admin')->givePermissionTo('view-users');
         
         $this->actingAs($admin);
         
@@ -122,27 +108,12 @@ class AuthenticationTest extends TestCase
         $response->assertStatus(200);
     }
 
-    /** @test */
-    public function user_without_admin_role_cannot_access_user_management()
-    {
-        $user = User::factory()->create();
-        $user->assignRole('user');
-        
-        $this->actingAs($user);
-        
-        $response = $this->get('/users');
-        
-        $response->assertStatus(403);
-    }
+
 
     /** @test */
-    public function user_with_asset_permission_can_access_assets()
+    public function user_can_access_assets()
     {
         $user = User::factory()->create();
-        $user->assignRole('user');
-        
-        Permission::create(['name' => 'view-assets']);
-        Role::findByName('user')->givePermissionTo('view-assets');
         
         $this->actingAs($user);
         
@@ -151,18 +122,7 @@ class AuthenticationTest extends TestCase
         $response->assertStatus(200);
     }
 
-    /** @test */
-    public function user_without_asset_permission_cannot_access_assets()
-    {
-        $user = User::factory()->create();
-        // Don't assign any role or permissions
-        
-        $this->actingAs($user);
-        
-        $response = $this->get('/assets');
-        
-        $response->assertStatus(403);
-    }
+
 
     /** @test */
     public function login_validates_required_fields()
@@ -190,7 +150,6 @@ class AuthenticationTest extends TestCase
             'email' => 'test@example.com',
             'password' => Hash::make('password123')
         ]);
-        $user->assignRole('admin');
         
         // Try to access a protected page
         $response = $this->get('/users');

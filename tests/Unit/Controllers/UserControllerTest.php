@@ -8,8 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
+
 use Illuminate\Support\Facades\Auth;
 
 class UserControllerTest extends TestCase
@@ -23,28 +22,14 @@ class UserControllerTest extends TestCase
     {
         parent::setUp();
         
-        // Create permissions
-        Permission::create(['name' => 'view-users']);
-        Permission::create(['name' => 'create-user']);
-        Permission::create(['name' => 'edit-user']);
-        Permission::create(['name' => 'delete-user']);
-        Permission::create(['name' => 'reset-password']);
-        
-        // Create roles
-        $adminRole = Role::create(['name' => 'admin']);
-        $userRole = Role::create(['name' => 'user']);
-        
-        // Assign permissions to admin role
-        $adminRole->givePermissionTo([
-            'view-users', 'create-user', 'edit-user', 'delete-user', 'reset-password'
-        ]);
+        // Basic test setup without roles/permissions
         
         // Create users
         $this->adminUser = User::factory()->create();
-        $this->adminUser->assignRole('admin');
+
         
         $this->user = User::factory()->create();
-        $this->user->assignRole('user');
+
     }
 
     /** @test */
@@ -83,7 +68,7 @@ class UserControllerTest extends TestCase
         
         $response->assertStatus(200);
         $response->assertViewIs('user-management.create');
-        $response->assertViewHas('roles');
+
     }
 
     /** @test */
@@ -99,7 +84,7 @@ class UserControllerTest extends TestCase
             'phone' => '1234567890',
             'location' => 'New York',
             'about_me' => 'Software Developer',
-            'roles' => ['user']
+
         ];
         
         $response = $this->post(route('users.store'), $userData);
@@ -113,7 +98,7 @@ class UserControllerTest extends TestCase
         ]);
         
         $user = User::where('email', 'john@example.com')->first();
-        $this->assertTrue($user->hasRole('user'));
+
     }
 
     /** @test */
@@ -123,7 +108,7 @@ class UserControllerTest extends TestCase
         
         $response = $this->post(route('users.store'), []);
         
-        $response->assertSessionHasErrors(['name', 'email', 'password', 'roles']);
+        $response->assertSessionHasErrors(['name', 'email', 'password']);
     }
 
     /** @test */
@@ -138,7 +123,7 @@ class UserControllerTest extends TestCase
             'email' => 'existing@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-            'roles' => ['user']
+
         ];
         
         $response = $this->post(route('users.store'), $userData);
@@ -168,7 +153,7 @@ class UserControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertViewIs('user-management.edit');
         $response->assertViewHas('user', $this->user);
-        $response->assertViewHas('roles');
+
     }
 
     /** @test */
@@ -182,7 +167,7 @@ class UserControllerTest extends TestCase
             'phone' => '9876543210',
             'location' => 'Updated Location',
             'about_me' => 'Updated About Me',
-            'roles' => ['admin']
+
         ];
         
         $response = $this->put(route('users.update', $this->user), $updateData);
@@ -193,7 +178,7 @@ class UserControllerTest extends TestCase
         $this->user->refresh();
         $this->assertEquals('Updated Name', $this->user->name);
         $this->assertEquals('9876543210', $this->user->phone);
-        $this->assertTrue($this->user->hasRole('admin'));
+
     }
 
     /** @test */
@@ -206,7 +191,7 @@ class UserControllerTest extends TestCase
             'email' => $this->user->email,
             'password' => 'newpassword123',
             'password_confirmation' => 'newpassword123',
-            'roles' => ['user']
+
         ];
         
         $response = $this->put(route('users.update', $this->user), $updateData);
@@ -277,7 +262,7 @@ class UserControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_requires_permission_to_access_user_management()
+    public function it_allows_access_to_user_management()
     {
         $unauthorizedUser = User::factory()->create();
         

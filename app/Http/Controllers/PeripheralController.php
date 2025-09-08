@@ -16,10 +16,7 @@ class PeripheralController extends Controller
     public function __construct(AuditService $auditService)
     {
         $this->auditService = $auditService;
-        $this->middleware('permission:view-peripherals', ['only' => ['index', 'show']]);
-        $this->middleware('permission:create-peripheral', ['only' => ['create', 'store']]);
-        $this->middleware('permission:edit-peripheral', ['only' => ['edit', 'update']]);
-        $this->middleware('permission:delete-peripheral', ['only' => ['destroy']]);
+
     }
 
     /**
@@ -58,18 +55,9 @@ class PeripheralController extends Controller
                 $actions .= '<i class="fa fa-ellipsis-v"></i>';
                 $actions .= '</button>';
                 $actions .= '<ul class="dropdown-menu dropdown-menu-end">';
-                
-                if (auth()->user()->can('view-peripherals')) {
-                    $actions .= '<li><a class="dropdown-item" href="' . route('peripherals.show', $peripheral->id) . '"><i class="fas fa-eye me-2"></i> View</a></li>';
-                }
-                
-                if (auth()->user()->can('edit-peripheral')) {
-                    $actions .= '<li><a class="dropdown-item" href="' . route('peripherals.edit', $peripheral->id) . '"><i class="fas fa-edit me-2"></i> Edit</a></li>';
-                }
-                
-                if (auth()->user()->can('delete-peripheral')) {
-                    $actions .= '<li><button type="button" class="dropdown-item" onclick="deletePeripheral(' . $peripheral->id . ')"><i class="fas fa-trash me-2"></i> Delete</button></li>';
-                }
+                $actions .= '<li><a class="dropdown-item" href="' . route('peripherals.show', $peripheral->id) . '"><i class="fas fa-eye me-2"></i> View</a></li>';
+                $actions .= '<li><a class="dropdown-item" href="' . route('peripherals.edit', $peripheral->id) . '"><i class="fas fa-edit me-2"></i> Edit</a></li>';
+                $actions .= '<li><button type="button" class="dropdown-item" onclick="deletePeripheral(' . $peripheral->id . ')"><i class="fas fa-trash me-2"></i> Delete</button></li>';
                 
                 $actions .= '</ul>';
                 $actions .= '</div>';

@@ -11,8 +11,7 @@ class ImportExportController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:import-assets', ['only' => ['importForm', 'import']]);
-        $this->middleware('permission:export-assets', ['only' => ['export', 'downloadTemplate']]);
+
     }
 
     /**

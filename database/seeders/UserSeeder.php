@@ -29,20 +29,8 @@ class UserSeeder extends Seeder
             ]);
              $this->command->info('Admin user created with email: admin@inventory.test and password: admin123');
              
-             // Assign admin role to the created user
-             $adminUser = User::find(1);
-             if ($adminUser) {
-                 $adminUser->assignRole('Admin');
-                 $this->command->info('Admin role assigned to user.');
-             }
          } else {
              $this->command->info('Admin user already exists, skipping creation.');
-             // Still try to assign admin role if not already assigned
-             $adminUser = User::where('email', 'admin@inventory.test')->first();
-             if ($adminUser && !$adminUser->hasRole('Admin')) {
-                 $adminUser->assignRole('Admin');
-                 $this->command->info('Admin role assigned to existing user.');
-             }
          }
         
         // Create additional users to support our seeders

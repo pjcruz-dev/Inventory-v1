@@ -10,7 +10,7 @@ use App\Models\PrintLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
-use Spatie\Permission\Models\Role;
+
 
 class UserTest extends TestCase
 {
@@ -19,7 +19,7 @@ class UserTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->artisan('db:seed', ['--class' => 'RoleSeeder']);
+
     }
 
     /** @test */
@@ -172,13 +172,5 @@ class UserTest extends TestCase
     }
 
     /** @test */
-    public function it_can_assign_roles()
-    {
-        $user = User::factory()->create();
-        $role = Role::create(['name' => 'admin']);
 
-        $user->assignRole($role);
-
-        $this->assertTrue($user->hasRole('admin'));
-    }
 }

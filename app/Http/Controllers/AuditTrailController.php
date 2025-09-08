@@ -10,7 +10,7 @@ class AuditTrailController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:view-audit-trail');
+
     }
 
     /**

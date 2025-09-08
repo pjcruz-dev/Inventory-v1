@@ -99,20 +99,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="row mt-4">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label class="form-control-label fw-bold">Assigned Roles</label>
-                            <div>
-                                @forelse($user->roles as $role)
-                                    <span class="badge bg-gradient-primary me-2 mb-2">{{ $role->name }}</span>
-                                @empty
-                                    <span class="text-muted">No roles assigned</span>
-                                @endforelse
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
     </div>

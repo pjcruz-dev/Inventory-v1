@@ -9,8 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
+
 use App\Models\User;
 
 class LocationControllerTest extends TestCase
@@ -24,19 +23,9 @@ class LocationControllerTest extends TestCase
     {
         parent::setUp();
         
-        // Create permissions
-        Permission::create(['name' => 'view-locations']);
-        Permission::create(['name' => 'create-location']);
-        Permission::create(['name' => 'edit-location']);
-        Permission::create(['name' => 'delete-location']);
-        
-        // Create role with permissions
-        $role = Role::create(['name' => 'admin']);
-        $role->givePermissionTo(['view-locations', 'create-location', 'edit-location', 'delete-location']);
-        
-        // Create user and assign role
+        // Create user for testing
         $this->user = User::factory()->create();
-        $this->user->assignRole('admin');
+
         
         $this->controller = new LocationController();
     }
@@ -248,40 +237,7 @@ class LocationControllerTest extends TestCase
         $this->assertDatabaseHas('locations', ['id' => $location->id]);
     }
 
-    /** @test */
-    public function it_requires_proper_permissions_for_actions()
-    {
-        // Create user without permissions
-        $userWithoutPermissions = User::factory()->create();
-        
-        $location = Location::factory()->create();
-        
-        $this->actingAs($userWithoutPermissions);
-        
-        // Test view permission
-        $response = $this->get(route('locations.index'));
-        $response->assertStatus(403);
-        
-        // Test create permission
-        $response = $this->get(route('locations.create'));
-        $response->assertStatus(403);
-        
-        // Test store permission
-        $response = $this->post(route('locations.store'), ['name' => 'Test']);
-        $response->assertStatus(403);
-        
-        // Test edit permission
-        $response = $this->get(route('locations.edit', $location));
-        $response->assertStatus(403);
-        
-        // Test update permission
-        $response = $this->put(route('locations.update', $location), ['name' => 'Updated']);
-        $response->assertStatus(403);
-        
-        // Test delete permission
-        $response = $this->delete(route('locations.destroy', $location));
-        $response->assertStatus(403);
-    }
+
 
     /** @test */
     public function it_loads_assets_relationship_in_show_method()

@@ -5,14 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\User;
-use App\Models\Product;
-use App\Models\Category;
-use App\Models\Supplier;
-use App\Models\Customer;
-use App\Models\Order;
-use App\Models\Purchase;
-use App\Models\Sale;
-use App\Models\Inventory;
+use App\Models\Asset;
+use App\Models\AssetType;
+use App\Models\AssetTransfer;
+use App\Models\Location;
+use App\Models\Peripheral;
+use App\Models\PrintLog;
+use App\Models\AuditTrail;
 
 class GlobalSearchController extends Controller
 {
@@ -49,184 +48,99 @@ class GlobalSearchController extends Controller
             ];
         }
 
-        // Search Products (if exists)
-        if (class_exists('App\\Models\\Product')) {
-            try {
-                $products = Product::where('name', 'LIKE', "%{$query}%")
-                    ->orWhere('sku', 'LIKE', "%{$query}%")
-                    ->limit(5)
-                    ->get(['id', 'name', 'sku', 'price']);
-                
-                foreach ($products as $product) {
-                    $results[] = [
-                        'type' => 'product',
-                        'title' => $product->name,
-                        'subtitle' => 'SKU: ' . $product->sku . ' - $' . number_format($product->price, 2),
-                        'url' => route('products.index'),
-                        'icon' => 'fas fa-box',
-                        'module' => 'Products'
-                    ];
-                }
-            } catch (\Exception $e) {
-                // Product model doesn't exist or table not found
-            }
+        // Search Assets
+        $assets = Asset::where('name', 'LIKE', "%{$query}%")
+            ->orWhere('serial_number', 'LIKE', "%{$query}%")
+            ->orWhere('asset_tag', 'LIKE', "%{$query}%")
+            ->limit(5)
+            ->get(['id', 'name', 'serial_number', 'asset_tag', 'status']);
+        
+        foreach ($assets as $asset) {
+            $results[] = [
+                'type' => 'asset',
+                'title' => $asset->name,
+                'subtitle' => 'Tag: ' . $asset->asset_tag . ' - Status: ' . ucfirst($asset->status),
+                'url' => route('assets.index'),
+                'icon' => 'fas fa-laptop',
+                'module' => 'Assets'
+            ];
         }
 
-        // Search Categories (if exists)
-        if (class_exists('App\\Models\\Category')) {
-            try {
-                $categories = Category::where('name', 'LIKE', "%{$query}%")
-                    ->limit(3)
-                    ->get(['id', 'name', 'description']);
-                
-                foreach ($categories as $category) {
-                    $results[] = [
-                        'type' => 'category',
-                        'title' => $category->name,
-                        'subtitle' => $category->description ?? 'Category',
-                        'url' => route('categories.index'),
-                        'icon' => 'fas fa-tags',
-                        'module' => 'Categories'
-                    ];
-                }
-            } catch (\Exception $e) {
-                // Category model doesn't exist or table not found
-            }
+        // Search Asset Types
+        $assetTypes = AssetType::where('name', 'LIKE', "%{$query}%")
+            ->orWhere('description', 'LIKE', "%{$query}%")
+            ->limit(3)
+            ->get(['id', 'name', 'description']);
+        
+        foreach ($assetTypes as $assetType) {
+            $results[] = [
+                'type' => 'asset_type',
+                'title' => $assetType->name,
+                'subtitle' => $assetType->description ?? 'Asset Type',
+                'url' => route('asset-types.index'),
+                'icon' => 'fas fa-tags',
+                'module' => 'Asset Types'
+            ];
         }
 
-        // Search Suppliers (if exists)
-        if (class_exists('App\\Models\\Supplier')) {
-            try {
-                $suppliers = Supplier::where('name', 'LIKE', "%{$query}%")
-                    ->orWhere('email', 'LIKE', "%{$query}%")
-                    ->limit(3)
-                    ->get(['id', 'name', 'email', 'phone']);
-                
-                foreach ($suppliers as $supplier) {
-                    $results[] = [
-                        'type' => 'supplier',
-                        'title' => $supplier->name,
-                        'subtitle' => $supplier->email ?? $supplier->phone ?? 'Supplier',
-                        'url' => route('suppliers.index'),
-                        'icon' => 'fas fa-truck',
-                        'module' => 'Suppliers'
-                    ];
-                }
-            } catch (\Exception $e) {
-                // Supplier model doesn't exist or table not found
-            }
+        // Search Locations
+        $locations = Location::where('name', 'LIKE', "%{$query}%")
+            ->orWhere('address', 'LIKE', "%{$query}%")
+            ->limit(3)
+            ->get(['id', 'name', 'address']);
+        
+        foreach ($locations as $location) {
+            $results[] = [
+                'type' => 'location',
+                'title' => $location->name,
+                'subtitle' => $location->address ?? 'Location',
+                'url' => route('locations.index'),
+                'icon' => 'fas fa-map-marker-alt',
+                'module' => 'Locations'
+            ];
         }
 
-        // Search Customers (if exists)
-        if (class_exists('App\\Models\\Customer')) {
-            try {
-                $customers = Customer::where('name', 'LIKE', "%{$query}%")
-                    ->orWhere('email', 'LIKE', "%{$query}%")
-                    ->limit(3)
-                    ->get(['id', 'name', 'email', 'phone']);
-                
-                foreach ($customers as $customer) {
-                    $results[] = [
-                        'type' => 'customer',
-                        'title' => $customer->name,
-                        'subtitle' => $customer->email ?? $customer->phone ?? 'Customer',
-                        'url' => route('customers.index'),
-                        'icon' => 'fas fa-users',
-                        'module' => 'Customers'
-                    ];
-                }
-            } catch (\Exception $e) {
-                // Customer model doesn't exist or table not found
-            }
+        // Search Peripherals
+        $peripherals = Peripheral::where('name', 'LIKE', "%{$query}%")
+            ->orWhere('serial_number', 'LIKE', "%{$query}%")
+            ->limit(3)
+            ->get(['id', 'name', 'serial_number', 'type']);
+        
+        foreach ($peripherals as $peripheral) {
+            $results[] = [
+                'type' => 'peripheral',
+                'title' => $peripheral->name,
+                'subtitle' => 'Type: ' . ucfirst($peripheral->type) . ' - SN: ' . $peripheral->serial_number,
+                'url' => route('peripherals.index'),
+                'icon' => 'fas fa-mouse',
+                'module' => 'Peripherals'
+            ];
         }
 
-        // Search Orders (if exists)
-        if (class_exists('App\\Models\\Order')) {
-            try {
-                $orders = Order::where('order_number', 'LIKE', "%{$query}%")
-                    ->limit(3)
-                    ->get(['id', 'order_number', 'total_amount', 'status']);
-                
-                foreach ($orders as $order) {
-                    $results[] = [
-                        'type' => 'order',
-                        'title' => 'Order #' . $order->order_number,
-                        'subtitle' => 'Status: ' . ucfirst($order->status) . ' - $' . number_format($order->total_amount, 2),
-                        'url' => route('orders.index'),
-                        'icon' => 'fas fa-shopping-cart',
-                        'module' => 'Orders'
-                    ];
-                }
-            } catch (\Exception $e) {
-                // Order model doesn't exist or table not found
-            }
-        }
-
-        // Search Sales (if exists)
-        if (class_exists('App\\Models\\Sale')) {
-            try {
-                $sales = Sale::where('invoice_number', 'LIKE', "%{$query}%")
-                    ->limit(3)
-                    ->get(['id', 'invoice_number', 'total_amount', 'sale_date']);
-                
-                foreach ($sales as $sale) {
-                    $results[] = [
-                        'type' => 'sale',
-                        'title' => 'Sale #' . $sale->invoice_number,
-                        'subtitle' => 'Date: ' . $sale->sale_date . ' - $' . number_format($sale->total_amount, 2),
-                        'url' => route('sales.index'),
-                        'icon' => 'fas fa-cash-register',
-                        'module' => 'Sales'
-                    ];
-                }
-            } catch (\Exception $e) {
-                // Sale model doesn't exist or table not found
-            }
-        }
-
-        // Search Purchases (if exists)
-        if (class_exists('App\\Models\\Purchase')) {
-            try {
-                $purchases = Purchase::where('purchase_number', 'LIKE', "%{$query}%")
-                    ->limit(3)
-                    ->get(['id', 'purchase_number', 'total_amount', 'purchase_date']);
-                
-                foreach ($purchases as $purchase) {
-                    $results[] = [
-                        'type' => 'purchase',
-                        'title' => 'Purchase #' . $purchase->purchase_number,
-                        'subtitle' => 'Date: ' . $purchase->purchase_date . ' - $' . number_format($purchase->total_amount, 2),
-                        'url' => route('purchases.index'),
-                        'icon' => 'fas fa-shopping-bag',
-                        'module' => 'Purchases'
-                    ];
-                }
-            } catch (\Exception $e) {
-                // Purchase model doesn't exist or table not found
-            }
-        }
-
-        // Search Inventory (if exists)
-        if (class_exists('App\\Models\\Inventory')) {
-            try {
-                $inventory = Inventory::where('product_name', 'LIKE', "%{$query}%")
-                    ->orWhere('sku', 'LIKE', "%{$query}%")
-                    ->limit(3)
-                    ->get(['id', 'product_name', 'sku', 'quantity', 'location']);
-                
-                foreach ($inventory as $item) {
-                    $results[] = [
-                        'type' => 'inventory',
-                        'title' => $item->product_name,
-                        'subtitle' => 'SKU: ' . $item->sku . ' - Qty: ' . $item->quantity . ' (' . $item->location . ')',
-                        'url' => route('inventory.index'),
-                        'icon' => 'fas fa-warehouse',
-                        'module' => 'Inventory'
-                    ];
-                }
-            } catch (\Exception $e) {
-                // Inventory model doesn't exist or table not found
-            }
+        // Search Asset Transfers
+        $assetTransfers = AssetTransfer::with(['asset', 'fromUser', 'toUser'])
+            ->whereHas('asset', function($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%")
+                  ->orWhere('asset_tag', 'LIKE', "%{$query}%");
+            })
+            ->orWhereHas('fromUser', function($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%");
+            })
+            ->orWhereHas('toUser', function($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%");
+            })
+            ->limit(3)
+            ->get();
+        
+        foreach ($assetTransfers as $transfer) {
+            $results[] = [
+                'type' => 'asset_transfer',
+                'title' => 'Transfer: ' . $transfer->asset->name,
+                'subtitle' => 'From: ' . $transfer->fromUser->name . ' To: ' . $transfer->toUser->name,
+                'url' => route('asset-transfers.index'),
+                'icon' => 'fas fa-exchange-alt',
+                'module' => 'Asset Transfers'
+            ];
         }
 
         // Limit total results to 15

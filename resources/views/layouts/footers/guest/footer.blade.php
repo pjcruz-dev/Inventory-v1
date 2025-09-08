@@ -1,4 +1,4 @@
-  <!-- -------- START FOOTER 3 w/ COMPANY DESCRIPTION WITH LINKS & SOCIAL ICONS & COPYRIGHT ------- -->
+<!-- -------- START FOOTER 3 w/ COMPANY DESCRIPTION WITH LINKS & SOCIAL ICONS & COPYRIGHT ------- -->
  <!--  <footer class="footer py-5">
     <div class="container">
       <div class="row">
@@ -22,7 +22,7 @@
               Pricing
           </a>
       </div>
-        @if (!auth()->user() || \Request::is('static-sign-up')) 
+        @if (!auth()->user()) 
           <div class="col-lg-8 mx-auto text-center mb-4 mt-2">
               <a href="https://dribbble.com/creativetim" target="_blank" class="text-secondary me-xl-4 me-4">
                   <span class="text-lg fab fa-dribbble" aria-hidden="true"></span>
@@ -42,7 +42,7 @@
           </div>
         @endif
       </div>
-      @if (!auth()->user() || \Request::is('static-sign-up')) 
+      @if (!auth()->user()) 
         <div class="row">
           <div class="col-8 mx-auto text-center mt-1">
             <p class="mb-0 text-secondary">

@@ -27,9 +27,7 @@ class Kernel extends ConsoleKernel
         $hour = config('app.hour');
         $min = config('app.min');
         $scheduledInterval = $hour !== '' ? ( ($min !== '' && $min != 0) ?  $min .' */'. $hour .' * * *' : '0 */'. $hour .' * * *') : '*/'. $min .' * * * *';
-        if(env('IS_DEMO')) {
-            $schedule->command('migrate:fresh --seed')->cron($scheduledInterval);
-        }
+        // Schedule commands can be added here as needed
     }
 
     /**

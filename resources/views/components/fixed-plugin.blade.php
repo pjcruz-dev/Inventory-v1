@@ -4,11 +4,11 @@
     </a>
     <div class="card shadow-lg ">
       <div class="card-header pb-0 pt-3 ">
-        <div class="{{ (Request::is('rtl') ? 'float-end' : 'float-start') }}">
+        <div class="float-start">
           <h5 class="mt-3 mb-0">Soft UI Configurator</h5>
           <p>See our dashboard options.</p>
         </div>
-        <div class="{{ (Request::is('rtl') ? 'float-start mt-4' : 'float-end mt-4') }}">
+        <div class="float-end mt-4">
           <button class="btn btn-link text-dark p-0 fixed-plugin-close-button">
             <i class="fa fa-close"></i>
           </button>
@@ -22,7 +22,7 @@
           <h6 class="mb-0">Sidebar Colors</h6>
         </div>
         <a href="javascript:void(0)" class="switch-trigger background-color">
-          <div class="badge-colors my-2 {{ (Request::is('rtl') ? 'text-end' : 'text-start') }}">
+          <div class="badge-colors my-2 text-start">
             <span class="badge filter bg-gradient-primary active" data-color="primary" onclick="sidebarColor(this)"></span>
             <span class="badge filter bg-gradient-dark" data-color="dark" onclick="sidebarColor(this)"></span>
             <span class="badge filter bg-gradient-info" data-color="info" onclick="sidebarColor(this)"></span>
@@ -38,7 +38,7 @@
         </div>
         <div class="d-flex">
           <button class="btn bg-gradient-primary w-100 px-3 mb-2 active" data-class="bg-transparent" onclick="sidebarType(this)">Transparent</button>
-          <button class="btn bg-gradient-primary w-100 px-3 mb-2  {{ (Request::is('rtl') ? 'me-2' : 'ms-2') }}" data-class="bg-white" onclick="sidebarType(this)">White</button>
+          <button class="btn bg-gradient-primary w-100 px-3 mb-2 ms-2" data-class="bg-white" onclick="sidebarType(this)">White</button>
         </div>
         <p class="text-sm d-xl-none d-block mt-2">You can change the sidenav type just on desktop view.</p>
         <!-- Navbar Fixed -->
@@ -46,7 +46,7 @@
           <h6 class="mb-0">Navbar Fixed</h6>
         </div>
         <div class="form-check form-switch ps-0">
-          <input class="form-check-input mt-1 ms-auto  {{ (Request::is('rtl') ? 'float-end' : '') }}"" type="checkbox" id="navbarFixed" onclick="navbarFixed(this)">
+          <input class="form-check-input mt-1 ms-auto" type="checkbox" id="navbarFixed" onclick="navbarFixed(this)">
         </div>
       </div>
     </div>

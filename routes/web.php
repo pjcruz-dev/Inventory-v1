@@ -33,17 +33,9 @@ Route::group(['middleware' => 'auth'], function () {
 	// Global Search Route
 	Route::get('global-search', [GlobalSearchController::class, 'search'])->name('global.search');
 
-	Route::get('billing', function () {
-		return view('billing');
-	})->name('billing');
-
 	Route::get('profile', function () {
 		return view('profile');
 	})->name('profile');
-
-	Route::get('rtl', function () {
-		return view('rtl');
-	})->name('rtl');
 
 	Route::get('user-management', function () {
 		return view('laravel-examples/user-management');
@@ -54,19 +46,17 @@ Route::group(['middleware' => 'auth'], function () {
 	})->name('sweetalert-test');
 	
 	// User CRUD Routes (Admin Only)
-	Route::middleware(['permission:manage-users'])->group(function () {
+	Route::middleware(['auth'])->group(function () {
 		Route::resource('users', App\Http\Controllers\UserController::class);
 		Route::get('users/{user}/reset-password', [App\Http\Controllers\UserController::class, 'resetPassword'])->name('users.reset-password');
 		Route::put('users/{user}/update-password', [App\Http\Controllers\UserController::class, 'updatePassword'])->name('users.update-password');
 	});
 	
-	// Role and Permission Routes
-	Route::resource('roles', App\Http\Controllers\RoleController::class);
-	Route::resource('permissions', App\Http\Controllers\PermissionController::class);
+
 
 	// Asset Management Routes
-	Route::resource('asset-types', App\Http\Controllers\AssetTypeController::class);
 	Route::resource('assets', App\Http\Controllers\AssetController::class);
+	Route::resource('asset-types', App\Http\Controllers\AssetTypeController::class);
 	Route::resource('peripherals', App\Http\Controllers\PeripheralController::class);
 	Route::resource('asset-transfers', App\Http\Controllers\AssetTransferController::class);
 	Route::resource('print-logs', App\Http\Controllers\PrintLogController::class);
@@ -88,21 +78,7 @@ Route::group(['middleware' => 'auth'], function () {
 	Route::get('import-export/export', [App\Http\Controllers\ImportExportController::class, 'export'])->name('export.assets');
 	Route::get('import-export/template', [App\Http\Controllers\ImportExportController::class, 'downloadTemplate'])->name('export.template');
 
-	Route::get('tables', function () {
-		return view('tables');
-	})->name('tables');
 
-    Route::get('virtual-reality', function () {
-		return view('virtual-reality');
-	})->name('virtual-reality');
-
-    Route::get('static-sign-in', function () {
-		return view('static-sign-in');
-	})->name('sign-in');
-
-    Route::get('static-sign-up', function () {
-		return view('static-sign-up');
-	})->name('sign-up');
 
     Route::get('/logout', [SessionsController::class, 'destroy']);
 	Route::get('/user-profile', [InfoUserController::class, 'create']);

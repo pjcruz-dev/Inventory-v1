@@ -139,28 +139,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <div class="form-group">
-                                <label for="roles" class="form-control-label">Assign Roles</label>
-                                <div class="@error('roles')border border-danger rounded-3 @enderror">
-                                    <div class="row">
-                                        @foreach($roles as $role)
-                                        <div class="col-md-3 mb-3">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="roles[]" value="{{ $role->id }}" id="role_{{ $role->id }}" {{ in_array($role->id, old('roles', [])) ? 'checked' : '' }}>
-                                                <label class="custom-control-label" for="role_{{ $role->id }}">{{ $role->name }}</label>
-                                            </div>
-                                        </div>
-                                        @endforeach
-                                    </div>
-                                    @error('roles')
-                                        <p class="text-danger text-xs mt-2">{{ $message }}</p>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
                     <div class="d-flex justify-content-end mt-4">
                         <button type="button" class="btn btn-light me-3" onclick="ModalHandler.showCancelModal('{{ route('users.index') }}')">Cancel</button>
                         <button type="button" class="btn bg-gradient-primary" onclick="ModalHandler.showFormConfirmModal('Create User', 'Are you sure you want to create this user?', this.form)">Create User</button>

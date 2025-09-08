@@ -17,8 +17,7 @@ class PrintLogController extends Controller
     public function __construct(AuditService $auditService)
     {
         $this->auditService = $auditService;
-        $this->middleware('permission:view-print-logs', ['only' => ['index', 'show']]);
-        $this->middleware('permission:create-print-log', ['only' => ['create', 'store']]);
+
     }
 
     /**
@@ -60,11 +59,7 @@ class PrintLogController extends Controller
                 $actions .= '<i class="fa fa-ellipsis-v"></i>';
                 $actions .= '</button>';
                 $actions .= '<ul class="dropdown-menu dropdown-menu-end">';
-                
-                if (auth()->user()->can('view-print-logs')) {
-                    $actions .= '<li><a class="dropdown-item" href="' . route('print-logs.show', $printLog->id) . '"><i class="fas fa-eye me-2"></i> View</a></li>';
-                }
-                
+                $actions .= '<li><a class="dropdown-item" href="' . route('print-logs.show', $printLog->id) . '"><i class="fas fa-eye me-2"></i> View</a></li>';
                 $actions .= '</ul>';
                 $actions .= '</div>';
                 
