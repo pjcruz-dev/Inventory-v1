@@ -101,16 +101,19 @@ class RolePermissionSeeder extends Seeder
             'generate-report',
         ];
 
+        // Create permissions if they don't exist
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::findOrCreate($permission, 'web');
         }
+        
+        $this->command->info('Created permissions.');
 
         // Create roles and assign permissions
-        $adminRole = Role::create(['name' => 'Admin']);
-        $adminRole->givePermissionTo(Permission::all());
+        $adminRole = Role::findOrCreate('Admin', 'web');
+        $adminRole->syncPermissions(Permission::all());
 
-        $managerRole = Role::create(['name' => 'Manager']);
-        $managerRole->givePermissionTo([
+        $managerRole = Role::findOrCreate('Manager', 'web');
+        $managerRole->syncPermissions([
             'view-users',
             'view-roles',
             'view-permissions',
@@ -159,8 +162,8 @@ class RolePermissionSeeder extends Seeder
             'generate-report',
         ]);
 
-        $staffRole = Role::create(['name' => 'Staff']);
-        $staffRole->givePermissionTo([
+        $staffRole = Role::findOrCreate('Staff', 'web');
+        $staffRole->syncPermissions([
             // Asset Management permissions for Staff
             'view-assets',
             'view-peripherals',

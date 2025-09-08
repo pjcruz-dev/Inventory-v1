@@ -98,13 +98,13 @@
                                             <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink2">
                                                 <li>
                                                     <a class="dropdown-item" href="{{ route('peripherals.show', $peripheral->id) }}">
-                                                        View
+                                                        <i class="fas fa-eye me-2"></i>View
                                                     </a>
                                                 </li>
                                                 @can('update-peripheral')
                                                 <li>
                                                     <a class="dropdown-item" href="{{ route('peripherals.edit', $peripheral->id) }}">
-                                                        Edit
+                                                        <i class="fas fa-edit me-2"></i>Edit
                                                     </a>
                                                 </li>
                                                 @endcan
@@ -113,8 +113,8 @@
                                                     <form action="{{ route('peripherals.destroy', $peripheral->id) }}" method="post">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button class="dropdown-item" type="submit" onclick="return confirm('Are you sure you want to delete this peripheral?')">
-                                                            Delete
+                                                        <button class="dropdown-item text-danger" type="submit" onclick="return confirm('Are you sure you want to delete this peripheral?')">
+                                                            <i class="fas fa-trash me-2"></i>Delete
                                                         </button>
                                                     </form>
                                                 </li>

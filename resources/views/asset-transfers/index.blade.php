@@ -101,21 +101,21 @@
                                             <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink2">
                                                 <li>
                                                     <a class="dropdown-item" href="{{ route('asset-transfers.show', $transfer->id) }}">
-                                                        View
+                                                        <i class="fas fa-eye me-2"></i>View
                                                     </a>
                                                 </li>
                                                 @if($transfer->status == 'Pending')
                                                     @can('update-asset-transfer')
                                                     <li>
                                                         <a class="dropdown-item" href="{{ route('asset-transfers.edit', $transfer->id) }}">
-                                                            Edit
+                                                            <i class="fas fa-edit me-2"></i>Edit
                                                         </a>
                                                     </li>
                                                     @endcan
                                                     @can('complete-asset-transfer')
                                                     <li>
                                                         <a class="dropdown-item" href="{{ route('asset-transfers.complete', $transfer->id) }}">
-                                                            Complete Transfer
+                                                            <i class="fas fa-check-circle me-2"></i>Complete Transfer
                                                         </a>
                                                     </li>
                                                     @endcan
@@ -124,8 +124,8 @@
                                                         <form action="{{ route('asset-transfers.destroy', $transfer->id) }}" method="post">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button class="dropdown-item" type="submit" onclick="return confirm('Are you sure you want to cancel this transfer?')">
-                                                                Cancel Transfer
+                                                            <button class="dropdown-item text-danger" type="submit" onclick="return confirm('Are you sure you want to cancel this transfer?')">
+                                                                <i class="fas fa-times-circle me-2"></i>Cancel Transfer
                                                             </button>
                                                         </form>
                                                     </li>
