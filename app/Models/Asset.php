@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Validation\Rule;
 
 class Asset extends Model
 {
@@ -31,6 +32,31 @@ class Asset extends Model
         'warranty_until' => 'date',
         'cost' => 'decimal:2',
     ];
+
+    /**
+     * Get the validation rules for the asset.
+     */
+    public static function validationRules($id = null): array
+    {
+        return [
+            'asset_tag' => [
+                'required',
+                'string',
+                'max:64',
+                Rule::unique('assets')->ignore($id),
+            ],
+            'serial_no' => 'nullable|string|max:128',
+            'asset_type_id' => 'required|exists:asset_types,id',
+            'model' => 'nullable|string|max:200',
+            'manufacturer' => 'nullable|string|max:200',
+            'purchase_date' => 'nullable|date|before_or_equal:today',
+            'warranty_until' => 'nullable|date|after_or_equal:purchase_date',
+            'cost' => 'nullable|numeric|min:0|max:999999.99',
+            'status' => 'required|string|in:available,assigned,in_repair,disposed',
+            'location' => 'nullable|string|max:200',
+            'assigned_to_user_id' => 'nullable|exists:users,id',
+        ];
+    }
 
     /**
      * Get the asset type that owns the asset.

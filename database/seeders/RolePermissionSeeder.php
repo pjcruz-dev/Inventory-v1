@@ -26,6 +26,7 @@ class RolePermissionSeeder extends Seeder
             'create-user',
             'edit-user',
             'delete-user',
+            'manage-users',
             
             // Role permissions
             'view-roles',
@@ -40,7 +41,7 @@ class RolePermissionSeeder extends Seeder
             'delete-permission',
             
             // Asset Type permissions
-            'view-asset-types',
+            'view-asset-type',
             'create-asset-type',
             'edit-asset-type',
             'delete-asset-type',
@@ -101,22 +102,25 @@ class RolePermissionSeeder extends Seeder
             'generate-report',
         ];
 
+        // Create permissions if they don't exist
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::findOrCreate($permission, 'web');
         }
+        
+        $this->command->info('Created permissions.');
 
         // Create roles and assign permissions
-        $adminRole = Role::create(['name' => 'Admin']);
-        $adminRole->givePermissionTo(Permission::all());
+        $adminRole = Role::findOrCreate('Admin', 'web');
+        $adminRole->syncPermissions(Permission::all());
 
-        $managerRole = Role::create(['name' => 'Manager']);
-        $managerRole->givePermissionTo([
+        $managerRole = Role::findOrCreate('Manager', 'web');
+        $managerRole->syncPermissions([
             'view-users',
             'view-roles',
             'view-permissions',
             
             // Asset Management permissions for Manager
-            'view-asset-types',
+            'view-asset-type',
             'create-asset-type',
             'edit-asset-type',
             'view-assets',
@@ -159,8 +163,8 @@ class RolePermissionSeeder extends Seeder
             'generate-report',
         ]);
 
-        $staffRole = Role::create(['name' => 'Staff']);
-        $staffRole->givePermissionTo([
+        $staffRole = Role::findOrCreate('Staff', 'web');
+        $staffRole->syncPermissions([
             // Asset Management permissions for Staff
             'view-assets',
             'view-peripherals',
@@ -179,10 +183,6 @@ class RolePermissionSeeder extends Seeder
             'view-reports',
         ]);
 
-        // Assign admin role to user with ID 1 (if exists)
-        $user = User::find(1);
-        if ($user) {
-            $user->assignRole('Admin');
-        }
+        // Admin role will be assigned in UserSeeder after user creation
     }
 }

@@ -29,10 +29,6 @@
                             <p class="text-sm mb-0">Manage all assets in the system</p>
                         </div>
                         <div class="d-flex">
-                            <div class="input-group me-3" style="width: 250px;">
-                                <span class="input-group-text text-body"><i class="fas fa-search" aria-hidden="true"></i></span>
-                                <input type="text" class="form-control" id="searchInput" placeholder="Search assets...">
-                            </div>
                             <div class="dropdown me-2">
                                 <button class="btn bg-gradient-secondary dropdown-toggle btn-sm mb-0" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="fas fa-filter me-2"></i>Filter
@@ -92,14 +88,20 @@
                     @endif
                     
                     <div class="table-responsive p-0">
-                        <table class="table align-items-center mb-0">
+                        <table class="table align-items-center mb-0" id="assets-table">
                             <thead>
                                 <tr>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                                         Asset Tag
                                     </th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
-                                        Asset
+                                        Name
+                                    </th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                        Serial No
+                                    </th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                        Model
                                     </th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
                                         Type
@@ -118,82 +120,7 @@
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody id="assetsTable">
-                                @foreach($assets as $asset)
-                                <tr>
-                                    <td class="ps-4">
-                                        <p class="text-xs font-weight-bold mb-0">{{ $asset->asset_tag }}</p>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex px-2 py-1">
-                                            <div class="d-flex flex-column justify-content-center">
-                                                <h6 class="mb-0 text-sm">{{ $asset->name }}</h6>
-                                                <p class="text-xs text-secondary mb-0">{{ $asset->serial_number }}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">{{ $asset->assetType->name }}</p>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-sm bg-gradient-{{ $asset->status == 'Available' ? 'success' : ($asset->status == 'Assigned' ? 'info' : ($asset->status == 'Maintenance' ? 'warning' : 'secondary')) }}">{{ $asset->status }}</span>
-                                    </td>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">{{ $asset->location ?? 'Not specified' }}</p>
-                                    </td>
-                                    <td>
-                                        @if($asset->assignedTo)
-                                            <div class="d-flex px-2 py-1">
-                                                <div>
-                                                    <img src="/assets/img/team-{{ rand(1, 4) }}.jpg" class="avatar avatar-xs me-2">
-                                                </div>
-                                                <div class="d-flex flex-column justify-content-center">
-                                                    <h6 class="mb-0 text-xs">{{ $asset->assignedTo->name }}</h6>
-                                                </div>
-                                            </div>
-                                        @else
-                                            <p class="text-xs text-secondary mb-0">Not assigned</p>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-icon-only text-dark mb-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                @can('view-assets')
-                                                <li><a class="dropdown-item" href="{{ route('assets.show', $asset) }}"><i class="fas fa-eye me-2"></i>View</a></li>
-                                                @endcan
-                                                @can('edit-asset')
-                                                <li><a class="dropdown-item" href="{{ route('assets.edit', $asset) }}"><i class="fas fa-edit me-2"></i>Edit</a></li>
-                                                @endcan
-                                                @can('print-asset')
-                                                <li><a class="dropdown-item" href="{{ route('assets.print', $asset) }}"><i class="fas fa-print me-2"></i>Print</a></li>
-                                                @endcan
-                                                @can('create-asset-transfer')
-                                                <li><a class="dropdown-item" href="{{ route('asset-transfers.create', ['asset_id' => $asset->id]) }}"><i class="fas fa-exchange-alt me-2"></i>Transfer</a></li>
-                                                @endcan
-                                                @can('delete-asset')
-                                                <li>
-                                                    <form action="{{ route('assets.destroy', $asset) }}" method="POST" class="d-inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Are you sure you want to delete this asset?')">
-                                                            <i class="fas fa-trash me-2"></i>Delete
-                                                        </button>
-                                                    </form>
-                                                </li>
-                                                @endcan
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
                         </table>
-                    </div>
-                    <div class="d-flex justify-content-center mt-3">
-                        {{ $assets->links() }}
                     </div>
                 </div>
             </div>
@@ -201,26 +128,84 @@
     </div>
 </div>
 
+@push('scripts')
 <script>
-    // Simple search functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        const searchInput = document.getElementById('searchInput');
-        const assetsTable = document.getElementById('assetsTable');
-        const rows = assetsTable.getElementsByTagName('tr');
-        
-        searchInput.addEventListener('keyup', function() {
-            const searchTerm = searchInput.value.toLowerCase();
-            
-            for (let i = 0; i < rows.length; i++) {
-                const rowText = rows[i].textContent.toLowerCase();
-                if (rowText.includes(searchTerm)) {
-                    rows[i].style.display = '';
-                } else {
-                    rows[i].style.display = 'none';
-                }
+$(document).ready(function() {
+    $('#assets-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: '{{ route('assets.index') }}',
+        columns: [
+            {data: 'asset_tag', name: 'asset_tag'},
+            {data: 'name', name: 'name'},
+            {data: 'serial_no', name: 'serial_no'},
+            {data: 'model', name: 'model'},
+            {data: 'asset_type', name: 'asset_type', orderable: false, searchable: false},
+            {data: 'status_badge', name: 'status', orderable: false, searchable: false},
+            {data: 'location', name: 'location'},
+            {data: 'assigned_to', name: 'assigned_to', orderable: false, searchable: false},
+            {data: 'actions', name: 'actions', orderable: false, searchable: false}
+        ],
+        order: [[0, 'desc']],
+        pageLength: 25,
+        responsive: true,
+        language: {
+            processing: '<div class="d-flex justify-content-center align-items-center"><div class="spinner-border text-primary me-2" role="status"></div><span class="text-primary fw-bold">Loading assets...</span></div>',
+            search: "Search assets:",
+            searchPlaceholder: "Asset tag, name, serial, model...",
+            lengthMenu: "Display _MENU_ assets per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ total assets",
+            infoEmpty: "No assets available",
+            infoFiltered: "(filtered from _MAX_ total assets)",
+            zeroRecords: "<div class='text-center py-4'><i class='fas fa-search fa-2x text-muted mb-3'></i><p class='text-muted mb-0'>No assets match your search criteria</p><small class='text-muted'>Try adjusting your search terms</small></div>",
+            emptyTable: "<div class='text-center py-4'><i class='fas fa-laptop fa-2x text-muted mb-3'></i><p class='text-muted mb-0'>No assets have been added yet</p></div>",
+            paginate: {
+                first: '<i class="fas fa-angle-double-left"></i>',
+                last: '<i class="fas fa-angle-double-right"></i>',
+                next: '<i class="fas fa-angle-right"></i>',
+                previous: '<i class="fas fa-angle-left"></i>'
             }
-        });
+        }
     });
+});
+
+function deleteAsset(assetId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '/assets/' + assetId,
+                type: 'DELETE',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    Swal.fire(
+                        'Deleted!',
+                        'Asset has been deleted.',
+                        'success'
+                    );
+                    $('#assets-table').DataTable().ajax.reload();
+                },
+                error: function(xhr) {
+                    Swal.fire(
+                        'Error!',
+                        'Something went wrong.',
+                        'error'
+                    );
+                }
+            });
+        }
+    });
+}
 </script>
+@endpush
  
 @endsection

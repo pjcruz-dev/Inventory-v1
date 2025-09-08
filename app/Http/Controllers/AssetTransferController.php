@@ -9,6 +9,7 @@ use App\Services\AuditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Yajra\DataTables\Facades\DataTables;
 
 class AssetTransferController extends Controller
 {
@@ -20,6 +21,7 @@ class AssetTransferController extends Controller
         $this->middleware('permission:view-asset-transfers', ['only' => ['index', 'show']]);
         $this->middleware('permission:create-asset-transfer', ['only' => ['create', 'store']]);
         $this->middleware('permission:edit-asset-transfer', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:delete-asset-transfer', ['only' => ['destroy']]);
     }
 
     /**
@@ -27,30 +29,75 @@ class AssetTransferController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->input('search', '');
-        $status = $request->input('status', '');
-        $assetId = $request->input('asset_id', '');
-        
-        $transfers = AssetTransfer::with(['asset', 'fromUser', 'toUser', 'processedBy'])
-            ->when($search, function ($query, $search) {
-                return $query->whereHas('asset', function($q) use ($search) {
-                    $q->where('asset_tag', 'like', "%{$search}%");
-                })->orWhere('from_location', 'like', "%{$search}%")
-                  ->orWhere('to_location', 'like', "%{$search}%");
-            })
-            ->when($status, function ($query, $status) {
-                return $query->where('status', $status);
-            })
-            ->when($assetId, function ($query, $assetId) {
-                return $query->where('asset_id', $assetId);
-            })
-            ->orderBy('transfer_date', 'desc')
-            ->paginate(10);
+        if ($request->ajax()) {
+            return $this->getAssetTransfersDataTable();
+        }
 
         $assets = Asset::orderBy('asset_tag')->get();
         $statuses = ['pending', 'completed', 'cancelled'];
         
-        return view('asset-transfers.index', compact('transfers', 'assets', 'statuses', 'search', 'status', 'assetId'));
+        return view('asset-transfers.index', compact('assets', 'statuses'));
+    }
+
+    /**
+     * Get asset transfers data for DataTables.
+     */
+    private function getAssetTransfersDataTable()
+    {
+        $transfers = AssetTransfer::with(['asset', 'fromUser', 'toUser', 'processedBy'])
+            ->select('asset_transfers.*');
+
+        return DataTables::of($transfers)
+            ->addColumn('asset_tag', function ($transfer) {
+                return $transfer->asset ? $transfer->asset->asset_tag : 'N/A';
+            })
+            ->addColumn('asset_name', function ($transfer) {
+                return $transfer->asset ? $transfer->asset->name : 'N/A';
+            })
+            ->addColumn('from_user', function ($transfer) {
+                return $transfer->fromUser ? $transfer->fromUser->name : ($transfer->from_location ?: 'N/A');
+            })
+            ->addColumn('to_user', function ($transfer) {
+                return $transfer->toUser ? $transfer->toUser->name : ($transfer->to_location ?: 'N/A');
+            })
+            ->addColumn('status_badge', function ($transfer) {
+                $badgeClass = match($transfer->status) {
+                    'pending' => 'warning',
+                    'completed' => 'success',
+                    'cancelled' => 'danger',
+                    default => 'secondary'
+                };
+                return '<span class="badge bg-' . $badgeClass . '">' . ucfirst($transfer->status) . '</span>';
+            })
+            ->addColumn('actions', function ($transfer) {
+                $actions = '<div class="dropdown">';
+                $actions .= '<button class="btn btn-sm btn-icon-only text-dark mb-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">';
+                $actions .= '<i class="fa fa-ellipsis-v"></i>';
+                $actions .= '</button>';
+                $actions .= '<ul class="dropdown-menu dropdown-menu-end">';
+                
+                if (auth()->user()->can('view-asset-transfers')) {
+                    $actions .= '<li><a class="dropdown-item" href="' . route('asset-transfers.show', $transfer->id) . '"><i class="fas fa-eye me-2"></i> View</a></li>';
+                }
+                
+                if (auth()->user()->can('edit-asset-transfer')) {
+                    $actions .= '<li><a class="dropdown-item" href="' . route('asset-transfers.edit', $transfer->id) . '"><i class="fas fa-share me-2"></i> Edit Transfer</a></li>';
+                }
+                
+                if (auth()->user()->can('delete-asset-transfer')) {
+                    $actions .= '<li><button type="button" class="dropdown-item" onclick="deleteAssetTransfer(' . $transfer->id . ')"><i class="fas fa-trash me-2"></i> Delete</button></li>';
+                }
+                
+                $actions .= '</ul>';
+                $actions .= '</div>';
+                
+                return $actions;
+            })
+            ->editColumn('transfer_date', function ($transfer) {
+                return $transfer->transfer_date ? $transfer->transfer_date->format('Y-m-d H:i') : 'N/A';
+            })
+            ->rawColumns(['status_badge', 'actions'])
+            ->make(true);
     }
 
     /**
@@ -117,10 +164,27 @@ class AssetTransferController extends Controller
             ]);
             
             DB::commit();
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Asset transfer created successfully.',
+                    'redirect' => route('asset-transfers.index')
+                ]);
+            }
+            
             return redirect()->route('asset-transfers.index')
                 ->with('success', 'Asset transfer created successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to create asset transfer: ' . $e->getMessage()
+                ], 422);
+            }
+            
             return back()->with('error', 'Failed to create asset transfer: ' . $e->getMessage())
                 ->withInput();
         }
@@ -187,12 +251,77 @@ class AssetTransferController extends Controller
             }
             
             DB::commit();
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Asset transfer updated successfully.',
+                    'redirect' => route('asset-transfers.index')
+                ]);
+            }
+            
             return redirect()->route('asset-transfers.index')
                 ->with('success', 'Asset transfer updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to update asset transfer: ' . $e->getMessage()
+                ], 422);
+            }
+            
             return back()->with('error', 'Failed to update asset transfer: ' . $e->getMessage())
                 ->withInput();
+        }
+    }
+
+    /**
+     * Remove the specified asset transfer from storage (cancel transfer).
+     */
+    public function destroy(Request $request, AssetTransfer $assetTransfer)
+    {
+        // Only allow cancellation of pending transfers
+        if ($assetTransfer->status !== 'pending') {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Only pending transfers can be cancelled.'
+                ], 422);
+            }
+            
+            return back()->with('error', 'Only pending transfers can be cancelled.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $this->auditService->logDeleted($assetTransfer);
+            $assetTransfer->delete();
+            
+            DB::commit();
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Asset transfer cancelled successfully.',
+                    'redirect' => route('asset-transfers.index')
+                ]);
+            }
+            
+            return redirect()->route('asset-transfers.index')
+                ->with('success', 'Asset transfer cancelled successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to cancel asset transfer: ' . $e->getMessage()
+                ], 422);
+            }
+            
+            return back()->with('error', 'Failed to cancel asset transfer: ' . $e->getMessage());
         }
     }
 

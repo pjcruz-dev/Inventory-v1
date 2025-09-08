@@ -74,8 +74,49 @@ class PeripheralSeeder extends Seeder
             ],
         ];
 
+        // Create the base peripherals
         foreach ($peripherals as $peripheral) {
             Peripheral::create($peripheral);
         }
+        
+        // Generate additional peripherals to reach 100 records
+        $baseCount = count($peripherals);
+        $remaining = 100 - $baseCount;
+        
+        $this->command->info("Creating {$remaining} additional peripherals...");
+        
+        $peripheralTypes = [
+            'Mouse' => ['Wireless Mouse', 'Gaming Mouse', 'Trackball Mouse', 'Bluetooth Mouse', 'Ergonomic Mouse'],
+            'Keyboard' => ['Mechanical Keyboard', 'Wireless Keyboard', 'Ergonomic Keyboard', 'Bluetooth Keyboard', 'Gaming Keyboard'],
+            'Charger' => ['USB-C Charger', 'MagSafe Charger', 'Fast Charger', 'Wireless Charger', 'Power Adapter'],
+            'Docking Station' => ['USB-C Dock', 'Thunderbolt Dock', 'Mini Dock', 'Pro Dock', 'Universal Dock'],
+            'Headset' => ['Wireless Headset', 'Noise-Cancelling Headset', 'Gaming Headset', 'Bluetooth Headset', 'USB Headset'],
+            'External Drive' => ['SSD Drive', 'HDD Drive', 'Flash Drive', 'Portable Drive', 'Backup Drive'],
+            'Webcam' => ['HD Webcam', '4K Webcam', 'Conference Webcam', 'Streaming Webcam', 'Security Webcam'],
+            'Cable' => ['HDMI Cable', 'DisplayPort Cable', 'USB Cable', 'Ethernet Cable', 'Thunderbolt Cable'],
+            'Adapter' => ['USB Adapter', 'HDMI Adapter', 'VGA Adapter', 'Ethernet Adapter', 'Multi-port Adapter']
+        ];
+        
+        for ($i = 0; $i < $remaining; $i++) {
+            // Select a random laptop
+            $laptop = $laptops->random();
+            
+            // Select a random peripheral type
+            $type = array_rand($peripheralTypes);
+            $details = $peripheralTypes[$type][array_rand($peripheralTypes[$type])];
+            
+            // Generate a serial number prefix based on type
+            $prefix = strtoupper(substr($type, 0, 2));
+            $serialNo = $prefix . rand(10000, 99999);
+            
+            Peripheral::create([
+                'asset_id' => $laptop->id,
+                'type' => $type,
+                'details' => $details,
+                'serial_no' => $serialNo,
+            ]);
+        }
+        
+        $this->command->info('Created ' . Peripheral::count() . ' peripherals in total.');
     }
 }

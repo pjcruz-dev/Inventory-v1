@@ -168,8 +168,70 @@ class AssetSeeder extends Seeder
             ],
         ];
 
+        // Create the base assets
         foreach ($assets as $asset) {
-            Asset::create($asset);
+            Asset::firstOrCreate(
+                ['asset_tag' => $asset['asset_tag']],
+                $asset
+            );
         }
+        
+        // Generate additional assets to reach 100 records
+        $baseCount = count($assets);
+        $remaining = 100 - $baseCount;
+        
+        $this->command->info("Creating {$remaining} additional assets...");
+        
+        $models = [
+            'Laptop' => ['ThinkPad T480', 'MacBook Air', 'Surface Laptop', 'ZenBook Pro', 'Inspiron 15', 'Chromebook', 'Alienware m15', 'Spectre x360'],
+            'Desktop' => ['OptiPlex 7080', 'iMac 27"', 'Surface Studio', 'ThinkCentre', 'Precision Tower', 'ProDesk 600', 'EliteDesk 800'],
+            'Monitor' => ['P2419H', 'U2720Q', 'Studio Display', 'ProArt PA278CV', 'Odyssey G7', 'UltraGear 27GN950', 'ViewSonic VP2785'],
+            'Printer' => ['LaserJet Pro MFP', 'WorkForce Pro', 'Pixma TR8620', 'EcoTank ET-4760', 'OfficeJet Pro 9015', 'ImageCLASS MF743Cdw'],
+            'Server' => ['PowerEdge R640', 'ProLiant DL380', 'ThinkSystem SR650', 'Xserve', 'Supermicro SuperServer', 'PRIMERGY RX2530'],
+            'Mobile Device' => ['iPhone 12', 'Galaxy S22', 'Pixel 6', 'iPad Pro', 'Surface Pro', 'Galaxy Tab S7', 'OnePlus 9 Pro'],
+            'Networking' => ['Catalyst 9300', 'PowerSwitch S4148', 'UniFi Switch Pro', 'Nexus 9300', 'FortiGate 100F', 'EdgeRouter 4'],
+            'Accessories' => ['Magic Keyboard', 'MX Master 3', 'Thunderbolt Dock', 'USB-C Hub', 'Wireless Headset', 'Webcam Pro']
+        ];
+        
+        $manufacturers = ['Dell', 'HP', 'Apple', 'Lenovo', 'Microsoft', 'Samsung', 'Asus', 'Acer', 'LG', 'Cisco', 'Logitech', 'Canon', 'Epson'];
+        $locations = ['Main Office', 'IT Storage', 'Finance Department', 'HR Department', 'Marketing', 'Engineering', 'Executive Suite', 'Remote Office', 'Server Room'];
+        $statuses = ['available', 'assigned', 'in_repair', 'disposed', 'reserved'];
+        
+        for ($i = 0; $i < $remaining; $i++) {
+            // Select a random asset type
+            $assetType = $assetTypes->random();
+            $typeName = $assetType->name;
+            
+            // Get models for this type or use generic if not defined
+            $typeModels = $models[$typeName] ?? ['Standard Model', 'Pro Model', 'Enterprise Model', 'Basic Model'];
+            
+            // Generate a unique asset tag
+            $prefix = strtoupper(substr($typeName, 0, 3));
+            $assetTag = $prefix . '-' . str_pad($baseCount + $i + 1, 3, '0', STR_PAD_LEFT);
+            
+            // Determine if asset will be assigned
+            $status = $statuses[array_rand($statuses)];
+            $assignedToUserId = ($status === 'assigned') ? $users->random()->id : null;
+            
+            Asset::firstOrCreate(
+                ['asset_tag' => $assetTag],
+                [
+                    'asset_tag' => $assetTag,
+                    'serial_no' => 'SN' . rand(100000, 999999),
+                    'asset_type_id' => $assetType->id,
+                    'model' => $typeModels[array_rand($typeModels)],
+                    'manufacturer' => $manufacturers[array_rand($manufacturers)],
+                    'purchase_date' => Carbon::now()->subMonths(rand(1, 36))->format('Y-m-d'),
+                    'warranty_until' => Carbon::now()->addMonths(rand(-6, 36))->format('Y-m-d'),
+                    'cost' => rand(200, 5000),
+                    'status' => $status,
+                    'location' => $locations[array_rand($locations)],
+                    'assigned_to_user_id' => $assignedToUserId,
+                    'created_by' => $users->first()->id,
+                ]
+            );
+        }
+        
+        $this->command->info('Created ' . Asset::count() . ' assets in total.');
     }
 }

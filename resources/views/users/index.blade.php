@@ -28,15 +28,9 @@
                             <h5 class="mb-0">All Users</h5>
                             <p class="text-sm mb-0">Manage all system users and their access levels</p>
                         </div>
-                        <div class="d-flex">
-                            <div class="input-group me-3" style="width: 250px;">
-                                <span class="input-group-text text-body"><i class="fas fa-search" aria-hidden="true"></i></span>
-                                <input type="text" class="form-control" id="searchInput" placeholder="Search users...">
-                            </div>
-                            <a href="{{ route('users.create') }}" class="btn bg-gradient-primary btn-sm mb-0">
-                                <i class="fas fa-plus me-2"></i>New User
-                            </a>
-                        </div>
+                        <a href="{{ route('users.create') }}" class="btn bg-gradient-primary btn-sm mb-0">
+                            <i class="fas fa-plus me-2"></i>New User
+                        </a>
                     </div>
                 </div>
                 <div class="card-body px-0 pt-0 pb-2">
@@ -57,7 +51,7 @@
                     @endif
                     
                     <div class="table-responsive p-0">
-                        <table class="table align-items-center mb-0">
+                        <table id="users-table" class="table align-items-center mb-0">
                             <thead>
                                 <tr>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
@@ -83,68 +77,7 @@
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody id="usersTable">
-                                @foreach($users as $user)
-                                <tr>
-                                    <td class="ps-4">
-                                        <p class="text-xs font-weight-bold mb-0">{{ $user->id }}</p>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex px-2 py-1">
-                                            <div>
-                                                <img src="/assets/img/team-{{ rand(1, 4) }}.jpg" class="avatar avatar-sm me-3">
-                                            </div>
-                                            <div class="d-flex flex-column justify-content-center">
-                                                <h6 class="mb-0 text-sm">{{ $user->name }}</h6>
-                                                <p class="text-xs text-secondary mb-0">{{ $user->phone ?? 'No phone' }}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">{{ $user->email }}</p>
-                                    </td>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">{{ $user->location ?? 'Not specified' }}</p>
-                                    </td>
-                                    <td>
-                                        @if($user->roles->count() > 0)
-                                            @php $roleCount = $user->roles->count(); @endphp
-                                            @foreach($user->roles->take(2) as $role)
-                                                <span class="badge bg-gradient-primary">{{ $role->name }}</span>
-                                            @endforeach
-                                            @if($roleCount > 2)
-                                                <span class="badge bg-secondary">+{{ $roleCount - 2 }} more</span>
-                                            @endif
-                                        @else
-                                            <span class="text-xs text-secondary">No roles</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">{{ $user->created_at->format('d M Y') }}</p>
-                                    </td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-icon-only text-dark mb-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                <li><a class="dropdown-item" href="{{ route('users.show', $user) }}"><i class="fas fa-eye me-2"></i>View</a></li>
-                                                <li><a class="dropdown-item" href="{{ route('users.edit', $user) }}"><i class="fas fa-edit me-2"></i>Edit</a></li>
-                                                <li><a class="dropdown-item" href="{{ route('users.reset-password', $user) }}"><i class="fas fa-key me-2"></i>Reset Password</a></li>
-                                                <li>
-                                                    <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Are you sure you want to delete this user?')">
-                                                            <i class="fas fa-trash me-2"></i>Delete
-                                                        </button>
-                                                    </form>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforeach
+                            <tbody>
                             </tbody>
                         </table>
                     </div>
@@ -154,26 +87,82 @@
     </div>
 </div>
 
-<script>
-    // Simple search functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        const searchInput = document.getElementById('searchInput');
-        const usersTable = document.getElementById('usersTable');
-        const rows = usersTable.getElementsByTagName('tr');
-        
-        searchInput.addEventListener('keyup', function() {
-            const searchTerm = searchInput.value.toLowerCase();
-            
-            for (let i = 0; i < rows.length; i++) {
-                const rowText = rows[i].textContent.toLowerCase();
-                if (rowText.includes(searchTerm)) {
-                    rows[i].style.display = '';
-                } else {
-                    rows[i].style.display = 'none';
-                }
-            }
-        });
-    });
-</script>
- 
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    $('#users-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: '{{ route('users.index') }}',
+        columns: [
+            { data: 'id', name: 'id' },
+            { data: 'name', name: 'name' },
+            { data: 'email', name: 'email' },
+            { data: 'location', name: 'location' },
+            { data: 'roles_list', name: 'roles_list', orderable: false, searchable: false },
+            { data: 'created_at', name: 'created_at' },
+            { data: 'actions', name: 'actions', orderable: false, searchable: false }
+        ],
+        order: [[0, 'desc']],
+        pageLength: 10,
+        responsive: true,
+        language: {
+            processing: '<div class="d-flex justify-content-center align-items-center"><div class="spinner-border text-primary me-2" role="status"></div><span class="text-primary fw-bold">Loading users...</span></div>',
+            search: 'Search users:',
+            searchPlaceholder: 'Name, email, location...',
+            lengthMenu: 'Display _MENU_ users per page',
+            info: 'Showing _START_ to _END_ of _TOTAL_ total users',
+            infoEmpty: 'No users available',
+            infoFiltered: '(filtered from _MAX_ total users)',
+            zeroRecords: "<div class='text-center py-4'><i class='fas fa-search fa-2x text-muted mb-3'></i><p class='text-muted mb-0'>No users match your search criteria</p><small class='text-muted'>Try adjusting your search terms</small></div>",
+            emptyTable: "<div class='text-center py-4'><i class='fas fa-users fa-2x text-muted mb-3'></i><p class='text-muted mb-0'>No users have been added yet</p></div>",
+            paginate: {
+                first: '<i class="fas fa-angle-double-left"></i>',
+                last: '<i class="fas fa-angle-double-right"></i>',
+                next: '<i class="fas fa-angle-right"></i>',
+                previous: '<i class="fas fa-angle-left"></i>'
+            }
+        }
+    });
+});
+
+function deleteUser(userId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '/users/' + userId,
+                type: 'DELETE',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    Swal.fire(
+                        'Deleted!',
+                        'User has been deleted.',
+                        'success'
+                    );
+                    $('#users-table').DataTable().ajax.reload();
+                },
+                error: function(xhr) {
+                    Swal.fire(
+                        'Error!',
+                        'There was an error deleting the user.',
+                        'error'
+                    );
+                }
+            });
+        }
+    });
+}
+</script>
+@endpush

@@ -12,7 +12,7 @@
             </div>
             <div class="col-auto my-auto">
                 <div class="h-100">
-                    <h5 class="mb-1">{{ $peripheral->name }}</h5>
+                    <h5 class="mb-1">{{ $peripheral->details ?: 'N/A' }}</h5>
                     <p class="mb-0 text-sm">{{ $peripheral->type }}</p>
                 </div>
             </div>
@@ -48,8 +48,8 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="name" class="form-control-label">Name</label>
-                                    <p class="form-control-static">{{ $peripheral->name }}</p>
+                                    <label for="details" class="form-control-label">Details</label>
+                                    <p class="form-control-static">{{ $peripheral->details ?: 'N/A' }}</p>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -60,8 +60,8 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="serial_number" class="form-control-label">Serial Number</label>
-                                    <p class="form-control-static">{{ $peripheral->serial_number ?: 'N/A' }}</p>
+                                    <label for="serial_no" class="form-control-label">Serial No</label>
+                                    <p class="form-control-static">{{ $peripheral->serial_no ?: 'N/A' }}</p>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -78,30 +78,7 @@
                                     </p>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="purchase_date" class="form-control-label">Purchase Date</label>
-                                    <p class="form-control-static">
-                                        {{ $peripheral->purchase_date ? $peripheral->purchase_date->format('M d, Y') : 'N/A' }}
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="purchase_cost" class="form-control-label">Purchase Cost</label>
-                                    <p class="form-control-static">
-                                        {{ $peripheral->purchase_cost ? '$'.number_format($peripheral->purchase_cost, 2) : 'N/A' }}
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="notes" class="form-control-label">Notes</label>
-                                    <p class="form-control-static">
-                                        {{ $peripheral->notes ?: 'No notes available' }}
-                                    </p>
-                                </div>
-                            </div>
+
                         </div>
                     </div>
                 </div>

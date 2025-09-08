@@ -48,27 +48,34 @@
                             <div class="form-group">
                                 <label for="name" class="form-control-label">Name <span class="text-danger">*</span></label>
                                 <div class="@error('name') border border-danger rounded-3 @enderror">
-                                    <input class="form-control" type="text" placeholder="Laptop, Desktop, etc." id="name" name="name" value="{{ old('name', $assetType->name) }}" required>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                                        <input class="form-control" type="text" placeholder="Laptop, Desktop, etc." id="name" name="name" value="{{ old('name', $assetType->name) }}" required>
+                                    </div>
+                                    @error('name')
+                                        <p class="text-danger text-xs mt-2">{{ $message }}</p>
+                                    @enderror
                                 </div>
-                                @error('name')
-                                    <p class="text-danger text-xs mt-2">{{ $message }}</p>
-                                @enderror
                             </div>
                         </div>
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label for="description" class="form-control-label">Description</label>
                                 <div class="@error('description') border border-danger rounded-3 @enderror">
-                                    <textarea class="form-control" id="description" name="description" rows="3" placeholder="Detailed description of this asset type">{{ old('description', $assetType->description) }}</textarea>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-align-left"></i></span>
+                                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Detailed description of this asset type">{{ old('description', $assetType->description) }}</textarea>
+                                    </div>
+                                    @error('description')
+                                        <p class="text-danger text-xs mt-2">{{ $message }}</p>
+                                    @enderror
                                 </div>
-                                @error('description')
-                                    <p class="text-danger text-xs mt-2">{{ $message }}</p>
-                                @enderror
                             </div>
                         </div>
                     </div>
                     <div class="d-flex justify-content-end mt-4">
-                        <button type="submit" class="btn bg-gradient-primary btn-md">Update Asset Type</button>
+                        <button type="button" class="btn bg-gradient-secondary btn-md me-2" onclick="ModalHandler.showCancelModal('{{ route('asset-types.index') }}')">Cancel</button>
+                        <button type="button" class="btn bg-gradient-primary btn-md" onclick="ModalHandler.showFormConfirmModal('Update Asset Type', 'Are you sure you want to update this asset type?', this.form)">Update Asset Type</button>
                     </div>
                 </form>
             </div>

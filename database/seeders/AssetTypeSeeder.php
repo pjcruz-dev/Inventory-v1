@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\AssetType;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class AssetTypeSeeder extends Seeder
 {
@@ -12,7 +13,8 @@ class AssetTypeSeeder extends Seeder
      */
     public function run(): void
     {
-        $assetTypes = [
+        // Base asset types that will always be created
+        $baseAssetTypes = [
             [
                 'name' => 'Laptop',
                 'description' => 'Portable computers for work and productivity',
@@ -46,9 +48,38 @@ class AssetTypeSeeder extends Seeder
                 'description' => 'External devices that provide input/output functionality',
             ],
         ];
-
-        foreach ($assetTypes as $assetType) {
-            AssetType::create($assetType);
+        
+        // Create the base asset types
+        foreach ($baseAssetTypes as $assetType) {
+            AssetType::firstOrCreate(
+                ['name' => $assetType['name']],
+                $assetType
+            );
         }
+        
+        // Generate additional asset types to reach 100 records
+        $categories = ['IT Equipment', 'Office Equipment', 'Audio/Visual', 'Security', 'Storage', 'Communication', 'Testing', 'Development'];
+        $suffixes = ['Pro', 'Ultra', 'Lite', 'Max', 'Mini', 'Plus', 'Advanced', 'Basic', 'Enterprise', 'Standard'];
+        
+        $count = count($baseAssetTypes);
+        $remaining = 100 - $count;
+        
+        $this->command->info("Creating {$remaining} additional asset types...");
+        
+        for ($i = 0; $i < $remaining; $i++) {
+            $category = $categories[array_rand($categories)];
+            $suffix = $suffixes[array_rand($suffixes)];
+            $name = $category . ' ' . $suffix . ' ' . Str::random(3);
+            
+            AssetType::firstOrCreate(
+                ['name' => $name],
+                [
+                    'name' => $name,
+                    'description' => 'Auto-generated asset type for ' . $category . ' category',
+                ]
+            );
+        }
+        
+        $this->command->info('Created ' . AssetType::count() . ' asset types in total.');
     }
 }

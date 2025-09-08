@@ -45,11 +45,11 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="name" class="form-control-label">Name <span class="text-danger">*</span></label>
-                                <div class="@error('name') border border-danger rounded-3 @enderror">
-                                    <input class="form-control" type="text" placeholder="Logitech MX Keys" id="name" name="name" value="{{ old('name') }}" required>
+                                <label for="details" class="form-control-label">Details</label>
+                                <div class="@error('details') border border-danger rounded-3 @enderror">
+                                    <input class="form-control" type="text" placeholder="Logitech MX Keys" id="details" name="details" value="{{ old('details') }}">
                                 </div>
-                                @error('name')
+                                @error('details')
                                     <p class="text-danger text-xs mt-2">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -79,11 +79,11 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="serial_number" class="form-control-label">Serial Number</label>
-                                <div class="@error('serial_number') border border-danger rounded-3 @enderror">
-                                    <input class="form-control" type="text" placeholder="SN12345678" id="serial_number" name="serial_number" value="{{ old('serial_number') }}">
+                                <label for="serial_no" class="form-control-label">Serial Number</label>
+                                <div class="@error('serial_no') border border-danger rounded-3 @enderror">
+                                    <input class="form-control" type="text" placeholder="SN12345678" id="serial_no" name="serial_no" value="{{ old('serial_no') }}">
                                 </div>
-                                @error('serial_number')
+                                @error('serial_no')
                                     <p class="text-danger text-xs mt-2">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -106,42 +106,15 @@
                                 @enderror
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="purchase_date" class="form-control-label">Purchase Date</label>
-                                <div class="@error('purchase_date') border border-danger rounded-3 @enderror">
-                                    <input class="form-control" type="date" id="purchase_date" name="purchase_date" value="{{ old('purchase_date') }}">
-                                </div>
-                                @error('purchase_date')
-                                    <p class="text-danger text-xs mt-2">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="purchase_cost" class="form-control-label">Purchase Cost</label>
-                                <div class="@error('purchase_cost') border border-danger rounded-3 @enderror">
-                                    <input class="form-control" type="number" step="0.01" placeholder="99.99" id="purchase_cost" name="purchase_cost" value="{{ old('purchase_cost') }}">
-                                </div>
-                                @error('purchase_cost')
-                                    <p class="text-danger text-xs mt-2">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label for="notes" class="form-control-label">Notes</label>
-                                <div class="@error('notes') border border-danger rounded-3 @enderror">
-                                    <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Additional information about this peripheral">{{ old('notes') }}</textarea>
-                                </div>
-                                @error('notes')
-                                    <p class="text-danger text-xs mt-2">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
+
                     </div>
                     <div class="d-flex justify-content-end mt-4">
-                        <button type="submit" class="btn bg-gradient-primary btn-md">Create Peripheral</button>
+                        <button type="button" class="btn btn-secondary me-2" onclick="ModalHandler.showCancelModal()">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </button>
+                        <button type="button" class="btn bg-gradient-primary btn-md" onclick="ModalHandler.showFormConfirmModal('create', 'peripheral', this.form)">
+                            <i class="fas fa-plus me-1"></i>Create Peripheral
+                        </button>
                     </div>
                 </form>
             </div>

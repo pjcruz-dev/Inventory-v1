@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
+use Yajra\DataTables\Facades\DataTables;
 
 class PermissionController extends Controller
 {
@@ -14,17 +15,54 @@ class PermissionController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Permission::orderBy('id', 'DESC');
-        
-        // Search functionality
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where('name', 'LIKE', "%{$search}%");
+        if ($request->ajax()) {
+            return $this->getPermissionsDataTable();
         }
         
-        $permissions = $query->paginate(10);
-        return view('permissions.index', compact('permissions'))
-            ->with('i', ($request->input('page', 1) - 1) * 10);
+        return view('permissions.index');
+    }
+
+    /**
+     * Get permissions data for DataTables
+     *
+     * @return mixed
+     */
+    private function getPermissionsDataTable()
+    {
+        $permissions = Permission::select('permissions.*');
+
+        return DataTables::of($permissions)
+            ->addColumn('roles_count', function ($permission) {
+                return $permission->roles->count();
+            })
+            ->addColumn('actions', function ($permission) {
+                $actions = '<div class="dropdown">';
+                $actions .= '<button class="btn btn-sm btn-icon-only text-dark mb-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">';
+                $actions .= '<i class="fa fa-ellipsis-v"></i>';
+                $actions .= '</button>';
+                $actions .= '<ul class="dropdown-menu dropdown-menu-end">';
+                
+                if (auth()->user()->can('view-permissions')) {
+                    $actions .= '<li><a class="dropdown-item" href="' . route('permissions.show', $permission->id) . '"><i class="fas fa-eye me-2"></i>View</a></li>';
+                }
+                
+                if (auth()->user()->can('edit-permission')) {
+                    $actions .= '<li><a class="dropdown-item" href="' . route('permissions.edit', $permission->id) . '"><i class="fas fa-edit me-2"></i>Edit</a></li>';
+                }
+                
+                if (auth()->user()->can('delete-permission')) {
+                    $actions .= '<li><hr class="dropdown-divider"></li>';
+                    $actions .= '<li><a class="dropdown-item text-danger" href="#" onclick="deletePermission(' . $permission->id . ')"><i class="fas fa-trash me-2"></i>Delete</a></li>';
+                }
+                
+                $actions .= '</ul></div>';
+                return $actions;
+            })
+            ->editColumn('created_at', function ($permission) {
+                return $permission->created_at->format('M d, Y H:i');
+            })
+            ->rawColumns(['actions'])
+            ->make(true);
     }
 
     /**
@@ -50,6 +88,14 @@ class PermissionController extends Controller
         ]);
 
         Permission::create(['name' => $request->input('name')]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Permission created successfully',
+                'redirect' => route('permissions.index')
+            ]);
+        }
 
         return redirect()->route('permissions.index')
             ->with('success', 'Permission created successfully');
@@ -114,6 +160,14 @@ class PermissionController extends Controller
         $permission->name = $request->input('name');
         $permission->save();
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Permission updated successfully',
+                'redirect' => route('permissions.index')
+            ]);
+        }
+
         return redirect()->route('permissions.index')
             ->with('success', 'Permission updated successfully');
     }
@@ -124,10 +178,16 @@ class PermissionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $permission = Permission::find($id);
         if (!$permission) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Permission not found'
+                ], 404);
+            }
             return redirect()->route('permissions.index')
                 ->with('error', 'Permission not found');
         }
@@ -135,11 +195,25 @@ class PermissionController extends Controller
         // Check if this is a critical permission
         $criticalPermissions = ['create-user', 'edit-user', 'delete-user', 'create-role', 'edit-role', 'delete-role'];
         if (in_array($permission->name, $criticalPermissions)) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot delete critical system permission'
+                ], 422);
+            }
             return redirect()->route('permissions.index')
                 ->with('error', 'Cannot delete critical system permission');
         }
         
         $permission->delete();
+        
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Permission deleted successfully',
+                'redirect' => route('permissions.index')
+            ]);
+        }
         
         return redirect()->route('permissions.index')
             ->with('success', 'Permission deleted successfully');

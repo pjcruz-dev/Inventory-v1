@@ -8,6 +8,7 @@ use App\Services\AuditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Yajra\DataTables\Facades\DataTables;
 
 class PrintLogController extends Controller
 {
@@ -16,7 +17,7 @@ class PrintLogController extends Controller
     public function __construct(AuditService $auditService)
     {
         $this->auditService = $auditService;
-        $this->middleware('permission:view-print-log', ['only' => ['index', 'show']]);
+        $this->middleware('permission:view-print-logs', ['only' => ['index', 'show']]);
         $this->middleware('permission:create-print-log', ['only' => ['create', 'store']]);
     }
 
@@ -25,30 +26,58 @@ class PrintLogController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->input('search', '');
-        $assetId = $request->input('asset_id', '');
-        $printFormat = $request->input('print_format', '');
-        
-        $printLogs = PrintLog::with(['asset', 'printedBy'])
-            ->when($search, function ($query, $search) {
-                return $query->whereHas('asset', function($q) use ($search) {
-                    $q->where('asset_tag', 'like', "%{$search}%");
-                })->orWhere('destination_printer', 'like', "%{$search}%")
-                  ->orWhere('note', 'like', "%{$search}%");
-            })
-            ->when($assetId, function ($query, $assetId) {
-                return $query->where('asset_id', $assetId);
-            })
-            ->when($printFormat, function ($query, $printFormat) {
-                return $query->where('print_format', $printFormat);
-            })
-            ->orderBy('printed_at', 'desc')
-            ->paginate(10);
+        if ($request->ajax()) {
+            return $this->getPrintLogsDataTable();
+        }
 
         $assets = Asset::orderBy('asset_tag')->get();
         $printFormats = ['label', 'detail_report', 'summary'];
         
-        return view('print-logs.index', compact('printLogs', 'assets', 'printFormats', 'search', 'assetId', 'printFormat'));
+        return view('print-logs.index', compact('assets', 'printFormats'));
+    }
+
+    /**
+     * Get print logs data for DataTables.
+     */
+    private function getPrintLogsDataTable()
+    {
+        $printLogs = PrintLog::with(['asset', 'printedBy'])
+            ->select('print_logs.*');
+
+        return DataTables::of($printLogs)
+            ->addColumn('asset_tag', function ($printLog) {
+                return $printLog->asset ? $printLog->asset->asset_tag : 'N/A';
+            })
+            ->addColumn('asset_name', function ($printLog) {
+                return $printLog->asset ? $printLog->asset->name : 'N/A';
+            })
+            ->addColumn('printed_by_name', function ($printLog) {
+                return $printLog->printedBy ? $printLog->printedBy->name : 'N/A';
+            })
+            ->addColumn('actions', function ($printLog) {
+                $actions = '<div class="dropdown">';
+                $actions .= '<button class="btn btn-sm btn-icon-only text-dark mb-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">';
+                $actions .= '<i class="fa fa-ellipsis-v"></i>';
+                $actions .= '</button>';
+                $actions .= '<ul class="dropdown-menu dropdown-menu-end">';
+                
+                if (auth()->user()->can('view-print-logs')) {
+                    $actions .= '<li><a class="dropdown-item" href="' . route('print-logs.show', $printLog->id) . '"><i class="fas fa-eye me-2"></i> View</a></li>';
+                }
+                
+                $actions .= '</ul>';
+                $actions .= '</div>';
+                
+                return $actions;
+            })
+            ->editColumn('printed_at', function ($printLog) {
+                return $printLog->printed_at ? $printLog->printed_at->format('Y-m-d H:i') : 'N/A';
+            })
+            ->editColumn('print_format', function ($printLog) {
+                return ucfirst(str_replace('_', ' ', $printLog->print_format));
+            })
+            ->rawColumns(['actions'])
+            ->make(true);
     }
 
     /**
@@ -99,6 +128,16 @@ class PrintLogController extends Controller
             
             DB::commit();
             
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Print log created successfully.',
+                    'redirect' => $request->input('redirect_to_asset') 
+                        ? route('assets.show', $validated['asset_id'])
+                        : route('print-logs.index')
+                ]);
+            }
+            
             if ($request->input('redirect_to_asset')) {
                 return redirect()->route('assets.show', $validated['asset_id'])
                     ->with('success', 'Print log created successfully.');
@@ -108,6 +147,14 @@ class PrintLogController extends Controller
                 ->with('success', 'Print log created successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to create print log: ' . $e->getMessage()
+                ], 422);
+            }
+            
             return back()->with('error', 'Failed to create print log: ' . $e->getMessage())
                 ->withInput();
         }

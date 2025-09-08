@@ -150,7 +150,8 @@
                         </div>
                     </div>
                     <div class="d-flex justify-content-end mt-4">
-                        <button type="submit" class="btn bg-gradient-primary btn-md">Create Transfer</button>
+                        <button type="button" class="btn btn-outline-secondary me-2" onclick="ModalHandler.showCancelModal()">Cancel</button>
+                        <button type="button" class="btn bg-gradient-primary btn-md" onclick="ModalHandler.showFormConfirmModal(this.closest('form'), 'Create Transfer', 'Are you sure you want to create this asset transfer?')">Create Transfer</button>
                     </div>
                 </form>
             </div>

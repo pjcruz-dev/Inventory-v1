@@ -59,8 +59,8 @@
                     </div>
                     
                     <div class="d-flex justify-content-end mt-4">
-                        <a href="{{ route('permissions.index') }}" class="btn btn-light m-0">Cancel</a>
-                        <button type="submit" class="btn bg-gradient-primary m-0 ms-2">Update Permission</button>
+                        <button type="button" class="btn btn-light m-0" onclick="ModalHandler.showCancelModal('{{ route('permissions.index') }}')">Cancel</button>
+                        <button type="button" class="btn bg-gradient-primary m-0 ms-2" onclick="ModalHandler.showFormConfirmModal('Update Permission', 'Are you sure you want to update this permission?', this.form)">Update Permission</button>
                     </div>
                 </form>
             </div>

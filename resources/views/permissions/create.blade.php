@@ -6,8 +6,8 @@
     <div class="card card-body mx-4 mb-4">
         <div class="row gx-4">
             <div class="col-auto">
-                <div class="avatar avatar-xl position-relative">
-                    <i class="fas fa-key position-absolute" style="font-size: 24px;"></i>
+                <div class="avatar avatar-xl position-relative" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 1rem; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); display: flex; align-items: center; justify-content: center; width: 4rem; height: 4rem;">
+                    <i class="fas fa-key text-white" style="font-size: 1.5rem;"></i>
                 </div>
             </div>
             <div class="col-auto my-auto">
@@ -58,8 +58,8 @@
                     </div>
                     
                     <div class="d-flex justify-content-end mt-4">
-                        <a href="{{ route('permissions.index') }}" class="btn btn-light m-0">Cancel</a>
-                        <button type="submit" class="btn bg-gradient-primary m-0 ms-2">Create Permission</button>
+                        <button type="button" class="btn btn-light m-0" onclick="ModalHandler.showCancelModal('{{ route('permissions.index') }}')">Cancel</button>
+                        <button type="button" class="btn bg-gradient-primary m-0 ms-2" onclick="ModalHandler.showFormConfirmModal('Create Permission', 'Are you sure you want to create this permission?', this.form)">Create Permission</button>
                     </div>
                 </form>
             </div>

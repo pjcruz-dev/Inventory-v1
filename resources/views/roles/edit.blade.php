@@ -59,28 +59,70 @@
                     
                     <div class="row mt-4">
                         <div class="col-12">
-                            <label class="form-control-label">Permissions</label>
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="row">
-                                        @foreach($permissions as $permission)
-                                        <div class="col-md-3 mb-3">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="permission[]" value="{{ $permission->id }}" id="permission_{{ $permission->id }}"
-                                                    {{ in_array($permission->id, $rolePermissions) ? 'checked' : '' }}>
-                                                <label class="custom-control-label" for="permission_{{ $permission->id }}">{{ $permission->name }}</label>
-                                            </div>
-                                        </div>
-                                        @endforeach
-                                    </div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <label class="form-control-label mb-0">Permissions</label>
+                                <div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary me-2" id="selectAllBtn">
+                                        <i class="fas fa-check-square me-1"></i>Select All
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="removeAllBtn">
+                                        <i class="fas fa-square me-1"></i>Remove All
+                                    </button>
                                 </div>
                             </div>
+                            
+                            @php
+                                $groupedPermissions = [
+                                    'User Management' => $permissions->filter(fn($p) => str_contains($p->name, 'user')),
+                                    'Role Management' => $permissions->filter(fn($p) => str_contains($p->name, 'role')),
+                                    'Permission Management' => $permissions->filter(fn($p) => str_contains($p->name, 'permission')),
+                                    'Asset Management' => $permissions->filter(fn($p) => str_contains($p->name, 'asset') && !str_contains($p->name, 'transfer')),
+                                    'Asset Type Management' => $permissions->filter(fn($p) => str_contains($p->name, 'asset-type')),
+                                    'Peripheral Management' => $permissions->filter(fn($p) => str_contains($p->name, 'peripheral')),
+                                    'Asset Transfer Management' => $permissions->filter(fn($p) => str_contains($p->name, 'transfer')),
+                                    'Print & Audit' => $permissions->filter(fn($p) => str_contains($p->name, 'print') || str_contains($p->name, 'audit')),
+                                    'Legacy Inventory' => $permissions->filter(fn($p) => str_contains($p->name, 'product') || str_contains($p->name, 'category') || str_contains($p->name, 'supplier') || str_contains($p->name, 'order') || str_contains($p->name, 'report')),
+                                ];
+                            @endphp
+                            
+                            @foreach($groupedPermissions as $groupName => $groupPermissions)
+                                @if($groupPermissions->count() > 0)
+                                <div class="card mb-3">
+                                    <div class="card-header pb-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0">{{ $groupName }}</h6>
+                                            <div>
+                                                <button type="button" class="btn btn-xs btn-outline-info me-1 select-group-btn" data-group="{{ strtolower(str_replace(' ', '-', $groupName)) }}">
+                                                    <i class="fas fa-check-square me-1"></i>Select All
+                                                </button>
+                                                <button type="button" class="btn btn-xs btn-outline-secondary remove-group-btn" data-group="{{ strtolower(str_replace(' ', '-', $groupName)) }}">
+                                                    <i class="fas fa-square me-1"></i>Remove All
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body pt-2">
+                                        <div class="row">
+                                            @foreach($groupPermissions as $permission)
+                                            <div class="col-md-6 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input permission-checkbox group-{{ strtolower(str_replace(' ', '-', $groupName)) }}" type="checkbox" name="permissions[]" value="{{ $permission->id }}" id="permission_{{ $permission->id }}"
+                                                        {{ in_array($permission->id, $rolePermissions) ? 'checked' : '' }}>
+                                                    <label class="custom-control-label" for="permission_{{ $permission->id }}">{{ ucwords(str_replace('-', ' ', $permission->name)) }}</label>
+                                                </div>
+                                            </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
+                            @endforeach
                         </div>
                     </div>
                     
                     <div class="d-flex justify-content-end mt-4">
-                        <a href="{{ route('roles.index') }}" class="btn btn-light m-0">Cancel</a>
-                        <button type="submit" class="btn bg-gradient-primary m-0 ms-2">Update Role</button>
+                        <button type="button" class="btn btn-light m-0" onclick="ModalHandler.showCancelModal('{{ route('roles.index') }}')">Cancel</button>
+                        <button type="button" class="btn bg-gradient-primary m-0 ms-2" onclick="ModalHandler.showFormConfirmModal('Update Role', 'Are you sure you want to update this role?', this.form)">Update Role</button>
                     </div>
                 </form>
             </div>
@@ -89,3 +131,55 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const removeAllBtn = document.getElementById('removeAllBtn');
+        const permissionCheckboxes = document.querySelectorAll('.permission-checkbox');
+        const selectGroupBtns = document.querySelectorAll('.select-group-btn');
+        const removeGroupBtns = document.querySelectorAll('.remove-group-btn');
+
+        // Global Select All functionality
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('click', function() {
+                permissionCheckboxes.forEach(checkbox => {
+                    checkbox.checked = true;
+                });
+            });
+        }
+
+        // Global Remove All functionality
+        if (removeAllBtn) {
+            removeAllBtn.addEventListener('click', function() {
+                permissionCheckboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+            });
+        }
+
+        // Group Select All functionality
+        selectGroupBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const group = this.getAttribute('data-group');
+                const groupCheckboxes = document.querySelectorAll('.group-' + group);
+                groupCheckboxes.forEach(checkbox => {
+                    checkbox.checked = true;
+                });
+            });
+        });
+
+        // Group Remove All functionality
+        removeGroupBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const group = this.getAttribute('data-group');
+                const groupCheckboxes = document.querySelectorAll('.group-' + group);
+                groupCheckboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+            });
+        });
+    });
+</script>
+@endpush
