@@ -11,12 +11,7 @@
                         <div>
                             <h5 class="mb-0">Asset Transfers</h5>
                         </div>
-                        <div class="ms-auto">
-                            <div class="input-group">
-                                <span class="input-group-text text-body"><i class="fas fa-search" aria-hidden="true"></i></span>
-                                <input type="text" class="form-control" id="searchInput" placeholder="Type here...">
-                            </div>
-                        </div>
+
                         @can('create-asset-transfer')
                         <a href="{{ route('asset-transfers.create') }}" class="btn bg-gradient-primary btn-sm mb-0 ms-3" type="button">+&nbsp; New Transfer</a>
                         @endcan
@@ -36,111 +31,22 @@
                         </div>
                     @endif
                     <div class="table-responsive p-0">
-                        <table class="table align-items-center mb-0">
+                        <table id="asset-transfers-table" class="table align-items-center mb-0">
                             <thead>
                                 <tr>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Asset</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Asset Tag</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Asset Name</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">From</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">To</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Date</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Transfer Date</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Created At</th>
                                     <th class="text-secondary opacity-7">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($transfers as $transfer)
-                                <tr>
-                                    <td class="ps-4">
-                                        <p class="text-xs font-weight-bold mb-0">{{ $transfer->id }}</p>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex px-2 py-1">
-                                            <div>
-                                                <i class="fas fa-laptop me-3 text-sm"></i>
-                                            </div>
-                                            <div class="d-flex flex-column justify-content-center">
-                                                <h6 class="mb-0 text-sm">{{ $transfer->asset->name }}</h6>
-                                                <p class="text-xs text-secondary mb-0">{{ $transfer->asset->asset_tag }}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">
-                                            {{ $transfer->fromUser ? $transfer->fromUser->name : 'Inventory' }}
-                                        </p>
-                                        <p class="text-xs text-secondary mb-0">{{ $transfer->from_location }}</p>
-                                    </td>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">
-                                            {{ $transfer->toUser ? $transfer->toUser->name : 'Inventory' }}
-                                        </p>
-                                        <p class="text-xs text-secondary mb-0">{{ $transfer->to_location }}</p>
-                                    </td>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">{{ date('M d, Y', strtotime($transfer->transfer_date)) }}</p>
-                                    </td>
-                                    <td>
-                                        @if($transfer->status == 'Pending')
-                                            <span class="badge badge-sm bg-gradient-warning">Pending</span>
-                                        @elseif($transfer->status == 'Completed')
-                                            <span class="badge badge-sm bg-gradient-success">Completed</span>
-                                        @elseif($transfer->status == 'Cancelled')
-                                            <span class="badge badge-sm bg-gradient-danger">Cancelled</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">{{ date('M d, Y', strtotime($transfer->created_at)) }}</p>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="dropdown">
-                                            <a href="#" class="btn bg-gradient-dark dropdown-toggle btn-sm" data-bs-toggle="dropdown" id="navbarDropdownMenuLink2">
-                                                Actions
-                                            </a>
-                                            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink2">
-                                                <li>
-                                                    <a class="dropdown-item" href="{{ route('asset-transfers.show', $transfer->id) }}">
-                                                        <i class="fas fa-eye me-2"></i>View
-                                                    </a>
-                                                </li>
-                                                @if($transfer->status == 'Pending')
-                                                    @can('update-asset-transfer')
-                                                    <li>
-                                                        <a class="dropdown-item" href="{{ route('asset-transfers.edit', $transfer->id) }}">
-                                                            <i class="fas fa-edit me-2"></i>Edit
-                                                        </a>
-                                                    </li>
-                                                    @endcan
-                                                    @can('complete-asset-transfer')
-                                                    <li>
-                                                        <a class="dropdown-item" href="{{ route('asset-transfers.complete', $transfer->id) }}">
-                                                            <i class="fas fa-check-circle me-2"></i>Complete Transfer
-                                                        </a>
-                                                    </li>
-                                                    @endcan
-                                                    @can('delete-asset-transfer')
-                                                    <li>
-                                                        <form action="{{ route('asset-transfers.destroy', $transfer->id) }}" method="post">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button class="dropdown-item text-danger" type="submit" onclick="return confirm('Are you sure you want to cancel this transfer?')">
-                                                                <i class="fas fa-times-circle me-2"></i>Cancel Transfer
-                                                            </button>
-                                                        </form>
-                                                    </li>
-                                                    @endcan
-                                                @endif
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforeach
                             </tbody>
                         </table>
-                    </div>
-                    <div class="d-flex justify-content-center mt-3">
-                        {{ $transfers->links() }}
                     </div>
                 </div>
             </div>
@@ -148,25 +54,83 @@
     </div>
 </div>
 
+@push('scripts')
 <script>
-    // Simple search functionality
-    document.addEventListener('DOMContentLoaded', function () {
-        const searchInput = document.getElementById('searchInput');
-        const tableRows = document.querySelectorAll('tbody tr');
-        
-        searchInput.addEventListener('keyup', function () {
-            const searchTerm = searchInput.value.toLowerCase();
-            
-            tableRows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                if (text.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
+$(document).ready(function() {
+    $('#asset-transfers-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: '{{ route('asset-transfers.index') }}',
+        columns: [
+            {data: 'id', name: 'id'},
+            {data: 'asset_tag', name: 'asset_tag'},
+            {data: 'asset_name', name: 'asset_name'},
+            {data: 'from_user', name: 'from_user'},
+            {data: 'to_user', name: 'to_user'},
+            {data: 'transfer_date', name: 'transfer_date'},
+            {data: 'status_badge', name: 'status_badge', orderable: false, searchable: false},
+            {data: 'actions', name: 'actions', orderable: false, searchable: false}
+        ],
+        order: [[5, 'desc']],
+        pageLength: 25,
+        responsive: true,
+        language: {
+            processing: '<div class="d-flex justify-content-center align-items-center"><div class="spinner-border text-primary me-2" role="status"></div><span class="text-primary fw-bold">Loading transfers...</span></div>',
+            search: "Search asset transfers:",
+            searchPlaceholder: "Asset tag, user names, transfer date...",
+            lengthMenu: "Display _MENU_ transfers per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ total transfers",
+            infoEmpty: "No asset transfers available",
+            infoFiltered: "(filtered from _MAX_ total transfers)",
+            zeroRecords: "<div class='text-center py-4'><i class='fas fa-search fa-2x text-muted mb-3'></i><p class='text-muted mb-0'>No transfers match your search criteria</p><small class='text-muted'>Try adjusting your search terms</small></div>",
+            emptyTable: "<div class='text-center py-4'><i class='fas fa-exchange-alt fa-2x text-muted mb-3'></i><p class='text-muted mb-0'>No asset transfers have been recorded yet</p></div>",
+            paginate: {
+                first: '<i class="fas fa-angle-double-left"></i>',
+                last: '<i class="fas fa-angle-double-right"></i>',
+                next: '<i class="fas fa-angle-right"></i>',
+                previous: '<i class="fas fa-angle-left"></i>'
+            }
+        }
+    });
+});
+
+function deleteAssetTransfer(transferId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, cancel it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '/asset-transfers/' + transferId,
+                type: 'DELETE',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    Swal.fire(
+                        'Cancelled!',
+                        'Asset transfer has been cancelled.',
+                        'success'
+                    );
+                    $('#asset-transfers-table').DataTable().ajax.reload();
+                },
+                error: function(xhr) {
+                    Swal.fire(
+                        'Error!',
+                        'Something went wrong.',
+                        'error'
+                    );
                 }
             });
-        });
+        }
     });
+}
 </script>
+@endpush
 
 @endsection

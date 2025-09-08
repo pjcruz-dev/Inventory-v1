@@ -51,7 +51,10 @@ class AssetTypeSeeder extends Seeder
         
         // Create the base asset types
         foreach ($baseAssetTypes as $assetType) {
-            AssetType::create($assetType);
+            AssetType::firstOrCreate(
+                ['name' => $assetType['name']],
+                $assetType
+            );
         }
         
         // Generate additional asset types to reach 100 records
@@ -68,10 +71,13 @@ class AssetTypeSeeder extends Seeder
             $suffix = $suffixes[array_rand($suffixes)];
             $name = $category . ' ' . $suffix . ' ' . Str::random(3);
             
-            AssetType::create([
-                'name' => $name,
-                'description' => 'Auto-generated asset type for ' . $category . ' category',
-            ]);
+            AssetType::firstOrCreate(
+                ['name' => $name],
+                [
+                    'name' => $name,
+                    'description' => 'Auto-generated asset type for ' . $category . ' category',
+                ]
+            );
         }
         
         $this->command->info('Created ' . AssetType::count() . ' asset types in total.');

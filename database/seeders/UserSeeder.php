@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class UserSeeder extends Seeder
 {
@@ -16,19 +17,33 @@ class UserSeeder extends Seeder
     public function run()
     {
         // Check if admin user exists before creating
-        if (!DB::table('users')->where('id', 1)->exists()) {
-            // Create admin user
+        if (!DB::table('users')->where('email', 'admin@inventory.test')->exists()) {
+            // Create admin user with full access
             DB::table('users')->insert([
                 'id' => 1,
-                'name' => 'admin',
-                'email' => 'admin@gmail.com',
-                'password' => Hash::make('123123123'),
+                'name' => 'Administrator',
+                'email' => 'admin@inventory.test',
+                'password' => Hash::make('admin123'),
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
-        } else {
-            $this->command->info('Admin user already exists, skipping creation.');
-        }
+             $this->command->info('Admin user created with email: admin@inventory.test and password: admin123');
+             
+             // Assign admin role to the created user
+             $adminUser = User::find(1);
+             if ($adminUser) {
+                 $adminUser->assignRole('Admin');
+                 $this->command->info('Admin role assigned to user.');
+             }
+         } else {
+             $this->command->info('Admin user already exists, skipping creation.');
+             // Still try to assign admin role if not already assigned
+             $adminUser = User::where('email', 'admin@inventory.test')->first();
+             if ($adminUser && !$adminUser->hasRole('Admin')) {
+                 $adminUser->assignRole('Admin');
+                 $this->command->info('Admin role assigned to existing user.');
+             }
+         }
         
         // Create additional users to support our seeders
         $this->command->info('Creating additional users...');
@@ -41,14 +56,18 @@ class UserSeeder extends Seeder
             $department = $departments[array_rand($departments)];
             $position = $positions[array_rand($positions)];
             $name = $department . ' ' . $position . ' ' . $i;
+            $email = strtolower(str_replace(' ', '.', $name)) . '@inventory.test';
             
-            DB::table('users')->insert([
-                'name' => $name,
-                'email' => strtolower(str_replace(' ', '.', $name)) . '@inventory.test',
-                'password' => Hash::make('password'),
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
+            // Check if user already exists before creating
+            if (!DB::table('users')->where('email', $email)->exists()) {
+                DB::table('users')->insert([
+                    'name' => $name,
+                    'email' => $email,
+                    'password' => Hash::make('password'),
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+            }
         }
         
         $this->command->info('Created ' . DB::table('users')->count() . ' users in total.');

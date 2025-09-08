@@ -167,8 +167,8 @@
                     </div>
                     
                     <div class="d-flex justify-content-end mt-4">
-                        <a href="{{ route('users.index') }}" class="btn btn-light me-3">Cancel</a>
-                        <button type="submit" class="btn bg-gradient-primary">Update User</button>
+                        <button type="button" class="btn btn-light me-3" onclick="ModalHandler.showCancelModal('{{ route('users.index') }}')">Cancel</button>
+                        <button type="button" class="btn bg-gradient-primary" onclick="ModalHandler.showFormConfirmModal('Update User', 'Are you sure you want to update this user?', this.form)">Update User</button>
                     </div>
                 </form>
             </div>

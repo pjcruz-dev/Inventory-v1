@@ -7,7 +7,9 @@
         <div class="row gx-4">
             <div class="col-auto">
                 <div class="avatar avatar-xl position-relative">
-                    <i class="fas fa-user-tag position-absolute" style="font-size: 24px;"></i>
+                    <div class="icon icon-shape icon-lg bg-gradient-primary shadow text-center border-radius-lg">
+                        <i class="fas fa-user-shield text-white" style="font-size: 1.5rem;"></i>
+                    </div>
                 </div>
             </div>
             <div class="col-auto my-auto">
@@ -31,14 +33,6 @@
                     <div class="col-md-6">
                         <h6 class="mb-0">Roles</h6>
                     </div>
-                    <div class="col-md-6 d-flex justify-content-end">
-                        <form action="{{ route('roles.index') }}" method="GET" class="d-flex">
-                            <div class="input-group">
-                                <span class="input-group-text text-body"><i class="fas fa-search" aria-hidden="true"></i></span>
-                                <input type="text" name="search" class="form-control" placeholder="Search roles..." value="{{ request('search') }}">
-                            </div>
-                        </form>
-                    </div>
                 </div>
             </div>
             <div class="card-body pt-4 p-3">
@@ -51,78 +45,20 @@
                 @endif
 
                 <div class="table-responsive p-0">
-                    <table class="table align-items-center mb-0">
+                    <table id="roles-table" class="table align-items-center mb-0 table-hover">
                         <thead>
                             <tr>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Role Name</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Permissions Count</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Permissions</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Created At</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($roles as $key => $role)
-                            <tr>
-                                <td>
-                                    <div class="d-flex px-3 py-1">
-                                        <div class="d-flex flex-column justify-content-center">
-                                            <p class="text-xs font-weight-bold mb-0">{{ ++$i }}</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <p class="text-xs font-weight-bold mb-0">{{ $role->name }}</p>
-                                </td>
-                                <td>
-                                    <p class="text-xs font-weight-bold mb-0">
-                                        @php
-                                            $permissions = $role->permissions->take(3);
-                                            $remainingCount = $role->permissions->count() - 3;
-                                        @endphp
-                                        @foreach($permissions as $permission)
-                                            <span class="badge bg-gradient-info">{{ $permission->name }}</span>
-                                        @endforeach
-                                        @if($remainingCount > 0)
-                                            <span class="badge bg-gradient-secondary">+{{ $remainingCount }} more</span>
-                                        @endif
-                                    </p>
-                                </td>
-                                <td class="align-middle">
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-icon-only text-dark" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <a class="dropdown-item" href="{{ route('roles.show', $role->id) }}">
-                                                    <i class="fas fa-eye text-info"></i> View
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item" href="{{ route('roles.edit', $role->id) }}">
-                                                    <i class="fas fa-edit text-warning"></i> Edit
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <form action="{{ route('roles.destroy', $role->id) }}" method="POST" class="d-inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="dropdown-item" onclick="return confirm('Are you sure you want to delete this role?')">
-                                                        <i class="fas fa-trash text-danger"></i> Delete
-                                                    </button>
-                                                </form>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforeach
                         </tbody>
                     </table>
-                </div>
-
-                <div class="d-flex justify-content-center mt-3">
-                    {{ $roles->links() }}
                 </div>
             </div>
         </div>
@@ -130,3 +66,83 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    $('#roles-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '{{ route('roles.index') }}',
+            type: 'GET'
+        },
+        columns: [
+            { data: 'id', name: 'id' },
+            { data: 'name', name: 'name' },
+            { data: 'permissions_count', name: 'permissions_count', orderable: false, searchable: false },
+            { data: 'permissions_list', name: 'permissions_list', orderable: false, searchable: false },
+            { data: 'created_at', name: 'created_at' },
+            { data: 'actions', name: 'actions', orderable: false, searchable: false }
+        ],
+        order: [[0, 'desc']],
+        pageLength: 10,
+        responsive: true,
+        language: {
+            processing: '<div class="d-flex justify-content-center align-items-center"><div class="spinner-border text-primary me-2" role="status"></div><span class="text-primary fw-bold">Loading roles...</span></div>',
+            search: 'Search roles:',
+            searchPlaceholder: 'Role name, permissions...',
+            lengthMenu: 'Display _MENU_ roles per page',
+            info: 'Showing _START_ to _END_ of _TOTAL_ total roles',
+            infoEmpty: 'No roles available',
+            infoFiltered: '(filtered from _MAX_ total roles)',
+            zeroRecords: "<div class='text-center py-4'><i class='fas fa-search fa-2x text-muted mb-3'></i><p class='text-muted mb-0'>No roles match your search criteria</p><small class='text-muted'>Try adjusting your search terms</small></div>",
+            emptyTable: "<div class='text-center py-4'><i class='fas fa-user-shield fa-2x text-muted mb-3'></i><p class='text-muted mb-0'>No roles have been created yet</p></div>",
+            paginate: {
+                first: '<i class="fas fa-angle-double-left"></i>',
+                last: '<i class="fas fa-angle-double-right"></i>',
+                next: '<i class="fas fa-angle-right"></i>',
+                previous: '<i class="fas fa-angle-left"></i>'
+            }
+        }
+    });
+});
+
+function deleteRole(roleId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '/roles/' + roleId,
+                type: 'DELETE',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    Swal.fire(
+                        'Deleted!',
+                        'Role has been deleted.',
+                        'success'
+                    );
+                    $('#roles-table').DataTable().ajax.reload();
+                },
+                error: function(xhr) {
+                    Swal.fire(
+                        'Error!',
+                        'Something went wrong.',
+                        'error'
+                    );
+                }
+            });
+        }
+    });
+}
+</script>
+@endpush

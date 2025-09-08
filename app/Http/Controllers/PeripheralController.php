@@ -7,6 +7,7 @@ use App\Models\Peripheral;
 use App\Services\AuditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Yajra\DataTables\Facades\DataTables;
 
 class PeripheralController extends Controller
 {
@@ -26,31 +27,60 @@ class PeripheralController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->input('search', '');
-        $assetId = $request->input('asset_id', '');
-        $type = $request->input('type', '');
-        
-        $peripherals = Peripheral::with('asset')
-            ->when($search, function ($query, $search) {
-                return $query->where(function($q) use ($search) {
-                    $q->where('type', 'like', "%{$search}%")
-                      ->orWhere('details', 'like', "%{$search}%")
-                      ->orWhere('serial_no', 'like', "%{$search}%");
-                });
-            })
-            ->when($assetId, function ($query, $assetId) {
-                return $query->where('asset_id', $assetId);
-            })
-            ->when($type, function ($query, $type) {
-                return $query->where('type', $type);
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        if ($request->ajax()) {
+            return $this->getPeripheralsDataTable();
+        }
 
         $assets = Asset::orderBy('asset_tag')->get();
         $types = Peripheral::select('type')->distinct()->orderBy('type')->pluck('type');
         
-        return view('peripherals.index', compact('peripherals', 'assets', 'types', 'search', 'assetId', 'type'));
+        return view('peripherals.index', compact('assets', 'types'));
+    }
+
+    /**
+     * Get peripherals data for DataTables.
+     */
+    private function getPeripheralsDataTable()
+    {
+        $peripherals = Peripheral::with('asset')
+            ->select('peripherals.*');
+
+        return DataTables::of($peripherals)
+            ->addColumn('asset_tag', function ($peripheral) {
+                return $peripheral->asset ? $peripheral->asset->asset_tag : 'N/A';
+            })
+            ->addColumn('asset_name', function ($peripheral) {
+                return $peripheral->asset ? $peripheral->asset->name : 'N/A';
+            })
+            ->addColumn('actions', function ($peripheral) {
+                $actions = '<div class="dropdown">';
+                $actions .= '<button class="btn btn-sm btn-icon-only text-dark mb-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">';
+                $actions .= '<i class="fa fa-ellipsis-v"></i>';
+                $actions .= '</button>';
+                $actions .= '<ul class="dropdown-menu dropdown-menu-end">';
+                
+                if (auth()->user()->can('view-peripherals')) {
+                    $actions .= '<li><a class="dropdown-item" href="' . route('peripherals.show', $peripheral->id) . '"><i class="fas fa-eye me-2"></i> View</a></li>';
+                }
+                
+                if (auth()->user()->can('edit-peripheral')) {
+                    $actions .= '<li><a class="dropdown-item" href="' . route('peripherals.edit', $peripheral->id) . '"><i class="fas fa-edit me-2"></i> Edit</a></li>';
+                }
+                
+                if (auth()->user()->can('delete-peripheral')) {
+                    $actions .= '<li><button type="button" class="dropdown-item" onclick="deletePeripheral(' . $peripheral->id . ')"><i class="fas fa-trash me-2"></i> Delete</button></li>';
+                }
+                
+                $actions .= '</ul>';
+                $actions .= '</div>';
+                
+                return $actions;
+            })
+            ->editColumn('created_at', function ($peripheral) {
+                return $peripheral->created_at->format('Y-m-d H:i');
+            })
+            ->rawColumns(['actions'])
+            ->make(true);
     }
 
     /**
@@ -84,6 +114,16 @@ class PeripheralController extends Controller
             
             DB::commit();
             
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Peripheral created successfully.',
+                    'redirect' => $request->input('redirect_to_asset') && $peripheral->asset_id 
+                        ? route('assets.show', $peripheral->asset_id)
+                        : route('peripherals.index')
+                ]);
+            }
+            
             if ($request->input('redirect_to_asset') && $peripheral->asset_id) {
                 return redirect()->route('assets.show', $peripheral->asset_id)
                     ->with('success', 'Peripheral created successfully.');
@@ -93,6 +133,14 @@ class PeripheralController extends Controller
                 ->with('success', 'Peripheral created successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to create peripheral: ' . $e->getMessage()
+                ], 422);
+            }
+            
             return back()->with('error', 'Failed to create peripheral: ' . $e->getMessage())
                 ->withInput();
         }
@@ -139,6 +187,16 @@ class PeripheralController extends Controller
             
             DB::commit();
             
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Peripheral updated successfully.',
+                    'redirect' => $request->input('redirect_to_asset') && $peripheral->asset_id 
+                        ? route('assets.show', $peripheral->asset_id)
+                        : route('peripherals.index')
+                ]);
+            }
+            
             if ($request->input('redirect_to_asset') && $peripheral->asset_id) {
                 return redirect()->route('assets.show', $peripheral->asset_id)
                     ->with('success', 'Peripheral updated successfully.');
@@ -148,6 +206,14 @@ class PeripheralController extends Controller
                 ->with('success', 'Peripheral updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to update peripheral: ' . $e->getMessage()
+                ], 422);
+            }
+            
             return back()->with('error', 'Failed to update peripheral: ' . $e->getMessage())
                 ->withInput();
         }
@@ -156,10 +222,10 @@ class PeripheralController extends Controller
     /**
      * Remove the specified peripheral from storage.
      */
-    public function destroy(Peripheral $peripheral)
+    public function destroy(Request $request, Peripheral $peripheral)
     {
         $assetId = $peripheral->asset_id;
-        $redirectToAsset = request()->input('redirect_to_asset');
+        $redirectToAsset = $request->input('redirect_to_asset');
 
         DB::beginTransaction();
         try {
@@ -167,6 +233,16 @@ class PeripheralController extends Controller
             $peripheral->delete();
             
             DB::commit();
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Peripheral deleted successfully.',
+                    'redirect' => $redirectToAsset && $assetId 
+                        ? route('assets.show', $assetId)
+                        : route('peripherals.index')
+                ]);
+            }
             
             if ($redirectToAsset && $assetId) {
                 return redirect()->route('assets.show', $assetId)
@@ -177,6 +253,14 @@ class PeripheralController extends Controller
                 ->with('success', 'Peripheral deleted successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to delete peripheral: ' . $e->getMessage()
+                ], 422);
+            }
+            
             return back()->with('error', 'Failed to delete peripheral: ' . $e->getMessage());
         }
     }

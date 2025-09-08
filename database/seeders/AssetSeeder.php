@@ -170,7 +170,10 @@ class AssetSeeder extends Seeder
 
         // Create the base assets
         foreach ($assets as $asset) {
-            Asset::create($asset);
+            Asset::firstOrCreate(
+                ['asset_tag' => $asset['asset_tag']],
+                $asset
+            );
         }
         
         // Generate additional assets to reach 100 records
@@ -210,20 +213,23 @@ class AssetSeeder extends Seeder
             $status = $statuses[array_rand($statuses)];
             $assignedToUserId = ($status === 'assigned') ? $users->random()->id : null;
             
-            Asset::create([
-                'asset_tag' => $assetTag,
-                'serial_no' => 'SN' . rand(100000, 999999),
-                'asset_type_id' => $assetType->id,
-                'model' => $typeModels[array_rand($typeModels)],
-                'manufacturer' => $manufacturers[array_rand($manufacturers)],
-                'purchase_date' => Carbon::now()->subMonths(rand(1, 36))->format('Y-m-d'),
-                'warranty_until' => Carbon::now()->addMonths(rand(-6, 36))->format('Y-m-d'),
-                'cost' => rand(200, 5000),
-                'status' => $status,
-                'location' => $locations[array_rand($locations)],
-                'assigned_to_user_id' => $assignedToUserId,
-                'created_by' => $users->first()->id,
-            ]);
+            Asset::firstOrCreate(
+                ['asset_tag' => $assetTag],
+                [
+                    'asset_tag' => $assetTag,
+                    'serial_no' => 'SN' . rand(100000, 999999),
+                    'asset_type_id' => $assetType->id,
+                    'model' => $typeModels[array_rand($typeModels)],
+                    'manufacturer' => $manufacturers[array_rand($manufacturers)],
+                    'purchase_date' => Carbon::now()->subMonths(rand(1, 36))->format('Y-m-d'),
+                    'warranty_until' => Carbon::now()->addMonths(rand(-6, 36))->format('Y-m-d'),
+                    'cost' => rand(200, 5000),
+                    'status' => $status,
+                    'location' => $locations[array_rand($locations)],
+                    'assigned_to_user_id' => $assignedToUserId,
+                    'created_by' => $users->first()->id,
+                ]
+            );
         }
         
         $this->command->info('Created ' . Asset::count() . ' assets in total.');

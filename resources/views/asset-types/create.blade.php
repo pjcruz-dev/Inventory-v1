@@ -67,7 +67,8 @@
                         </div>
                     </div>
                     <div class="d-flex justify-content-end mt-4">
-                        <button type="submit" class="btn bg-gradient-primary btn-md">Create Asset Type</button>
+                        <button type="button" class="btn bg-gradient-secondary btn-md me-2" onclick="ModalHandler.showCancelModal('{{ route('asset-types.index') }}')">Cancel</button>
+                        <button type="button" class="btn bg-gradient-primary btn-md" onclick="ModalHandler.showFormConfirmModal('Create Asset Type', 'Are you sure you want to create this asset type?', this.form)">Create Asset Type</button>
                     </div>
                 </form>
             </div>

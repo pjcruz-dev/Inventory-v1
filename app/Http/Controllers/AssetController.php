@@ -9,6 +9,7 @@ use App\Services\AuditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Yajra\DataTables\Facades\DataTables;
 
 class AssetController extends Controller
 {
@@ -28,33 +29,64 @@ class AssetController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->input('search', '');
-        $status = $request->input('status', '');
-        $assetTypeId = $request->input('asset_type_id', '');
-        
-        $assets = Asset::with(['assetType', 'assignedTo'])
-            ->when($search, function ($query, $search) {
-                return $query->where(function($q) use ($search) {
-                    $q->where('asset_tag', 'like', "%{$search}%")
-                      ->orWhere('serial_no', 'like', "%{$search}%")
-                      ->orWhere('model', 'like', "%{$search}%")
-                      ->orWhere('manufacturer', 'like', "%{$search}%")
-                      ->orWhere('location', 'like', "%{$search}%");
-                });
-            })
-            ->when($status, function ($query, $status) {
-                return $query->where('status', $status);
-            })
-            ->when($assetTypeId, function ($query, $assetTypeId) {
-                return $query->where('asset_type_id', $assetTypeId);
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        if ($request->ajax()) {
+            return $this->getAssetsDataTable();
+        }
 
         $assetTypes = AssetType::orderBy('name')->get();
         $statuses = ['available', 'assigned', 'in_repair', 'disposed'];
         
-        return view('assets.index', compact('assets', 'assetTypes', 'statuses', 'search', 'status', 'assetTypeId'));
+        return view('assets.index', compact('assetTypes', 'statuses'));
+    }
+
+    /**
+     * Get assets data for DataTables.
+     */
+    public function getAssetsDataTable()
+    {
+        $assets = Asset::with(['assetType', 'assignedTo'])
+            ->select('assets.*');
+
+        return DataTables::of($assets)
+            ->addColumn('asset_type', function ($asset) {
+                return $asset->assetType ? $asset->assetType->name : 'N/A';
+            })
+            ->addColumn('assigned_to', function ($asset) {
+                return $asset->assignedTo ? $asset->assignedTo->name : 'Unassigned';
+            })
+            ->addColumn('status_badge', function ($asset) {
+                $badgeClass = [
+                    'available' => 'bg-success',
+                    'assigned' => 'bg-primary',
+                    'in_repair' => 'bg-warning',
+                    'disposed' => 'bg-danger'
+                ];
+                $class = $badgeClass[$asset->status] ?? 'bg-secondary';
+                return '<span class="badge ' . $class . '">' . ucfirst($asset->status) . '</span>';
+            })
+            ->addColumn('actions', function ($asset) {
+                $actions = '<div class="dropdown">';
+                $actions .= '<button class="btn btn-sm btn-icon-only text-dark mb-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">';
+                $actions .= '<i class="fa fa-ellipsis-v"></i>';
+                $actions .= '</button>';
+                $actions .= '<ul class="dropdown-menu dropdown-menu-end">';
+                $actions .= '<li><a class="dropdown-item" href="' . route('assets.show', $asset->id) . '"><i class="fas fa-eye me-2"></i> View</a></li>';
+                
+                if (auth()->user()->can('edit-asset')) {
+                    $actions .= '<li><a class="dropdown-item" href="' . route('assets.edit', $asset->id) . '"><i class="fas fa-edit me-2"></i> Edit</a></li>';
+                }
+                
+                if (auth()->user()->can('delete-asset')) {
+                    $actions .= '<li><button type="button" class="dropdown-item" onclick="deleteAsset(' . $asset->id . ')"><i class="fas fa-trash me-2"></i> Delete</button></li>';
+                }
+                
+                $actions .= '</ul>';
+                $actions .= '</div>';
+                
+                return $actions;
+            })
+            ->rawColumns(['status_badge', 'actions'])
+            ->make(true);
     }
 
     /**
@@ -74,19 +106,7 @@ class AssetController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'asset_tag' => 'required|string|max:64|unique:assets',
-            'serial_no' => 'nullable|string|max:128',
-            'asset_type_id' => 'required|exists:asset_types,id',
-            'model' => 'nullable|string|max:200',
-            'manufacturer' => 'nullable|string|max:200',
-            'purchase_date' => 'nullable|date',
-            'warranty_until' => 'nullable|date',
-            'cost' => 'nullable|numeric|min:0',
-            'status' => 'required|string|in:available,assigned,in_repair,disposed',
-            'location' => 'nullable|string|max:200',
-            'assigned_to_user_id' => 'nullable|exists:users,id',
-        ]);
+        $validated = $request->validate(Asset::validationRules());
 
         // If status is not 'assigned', remove assigned_to_user_id
         if ($validated['status'] !== 'assigned') {
@@ -142,19 +162,7 @@ class AssetController extends Controller
      */
     public function update(Request $request, Asset $asset)
     {
-        $validated = $request->validate([
-            'asset_tag' => 'required|string|max:64|unique:assets,asset_tag,' . $asset->id,
-            'serial_no' => 'nullable|string|max:128',
-            'asset_type_id' => 'required|exists:asset_types,id',
-            'model' => 'nullable|string|max:200',
-            'manufacturer' => 'nullable|string|max:200',
-            'purchase_date' => 'nullable|date',
-            'warranty_until' => 'nullable|date',
-            'cost' => 'nullable|numeric|min:0',
-            'status' => 'required|string|in:available,assigned,in_repair,disposed',
-            'location' => 'nullable|string|max:200',
-            'assigned_to_user_id' => 'nullable|exists:users,id',
-        ]);
+        $validated = $request->validate(Asset::validationRules($asset->id));
 
         // If status is not 'assigned', remove assigned_to_user_id
         if ($validated['status'] !== 'assigned') {

@@ -9,11 +9,26 @@
             <h6 class="font-weight-bolder mb-0 text-capitalize">{{ str_replace('-', ' ', Request::path()) }}</h6>
         </nav>
         <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4 d-flex justify-content-end" id="navbar"> 
-            <div class="ms-md-3 pe-md-3 d-flex align-items-center">
-            <div class="input-group">
-                <span class="input-group-text text-body"><i class="fas fa-search" aria-hidden="true"></i></span>
-                <input type="text" class="form-control" placeholder="Type here...">
-            </div>
+            <div class="ms-md-3 pe-md-3 d-flex align-items-center position-relative">
+                <div class="input-group global-search-container">
+                    <span class="input-group-text text-body"><i class="fas fa-search" aria-hidden="true"></i></span>
+                    <input type="text" class="form-control global-search-input" placeholder="Search across all modules..." id="globalSearchInput" autocomplete="off">
+                    <div class="global-search-dropdown" id="globalSearchDropdown" style="display: none;">
+                        <div class="search-loading" id="searchLoading" style="display: none;">
+                            <div class="d-flex align-items-center justify-content-center p-3">
+                                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                <span>Searching...</span>
+                            </div>
+                        </div>
+                        <div class="search-results" id="searchResults"></div>
+                        <div class="search-no-results" id="searchNoResults" style="display: none;">
+                            <div class="p-3 text-center text-muted">
+                                <i class="fas fa-search mb-2"></i>
+                                <p class="mb-0">No results found</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <ul class="navbar-nav  justify-content-end">
             <li class="nav-item d-flex align-items-center">

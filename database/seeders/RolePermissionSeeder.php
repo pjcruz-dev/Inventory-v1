@@ -26,6 +26,7 @@ class RolePermissionSeeder extends Seeder
             'create-user',
             'edit-user',
             'delete-user',
+            'manage-users',
             
             // Role permissions
             'view-roles',
@@ -40,7 +41,7 @@ class RolePermissionSeeder extends Seeder
             'delete-permission',
             
             // Asset Type permissions
-            'view-asset-types',
+            'view-asset-type',
             'create-asset-type',
             'edit-asset-type',
             'delete-asset-type',
@@ -119,7 +120,7 @@ class RolePermissionSeeder extends Seeder
             'view-permissions',
             
             // Asset Management permissions for Manager
-            'view-asset-types',
+            'view-asset-type',
             'create-asset-type',
             'edit-asset-type',
             'view-assets',
@@ -182,10 +183,6 @@ class RolePermissionSeeder extends Seeder
             'view-reports',
         ]);
 
-        // Assign admin role to user with ID 1 (if exists)
-        $user = User::find(1);
-        if ($user) {
-            $user->assignRole('Admin');
-        }
+        // Admin role will be assigned in UserSeeder after user creation
     }
 }

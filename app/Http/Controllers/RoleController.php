@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\DB;
+use Yajra\DataTables\Facades\DataTables;
 
 class RoleController extends Controller
 {
@@ -16,17 +17,58 @@ class RoleController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Role::orderBy('id', 'DESC');
-        
-        // Search functionality
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where('name', 'LIKE', "%{$search}%");
+        if ($request->ajax()) {
+            return $this->getRolesDataTable();
         }
         
-        $roles = $query->paginate(10);
-        return view('roles.index', compact('roles'))
-            ->with('i', ($request->input('page', 1) - 1) * 10);
+        return view('roles.index');
+    }
+
+    /**
+     * Get roles data for DataTables
+     *
+     * @return mixed
+     */
+    private function getRolesDataTable()
+    {
+        $roles = Role::with('permissions')->select('roles.*');
+
+        return DataTables::of($roles)
+            ->addColumn('permissions_count', function ($role) {
+                return $role->permissions->count();
+            })
+            ->addColumn('permissions_list', function ($role) {
+                return $role->permissions->take(3)->pluck('name')->implode(', ') . 
+                       ($role->permissions->count() > 3 ? ' (+' . ($role->permissions->count() - 3) . ' more)' : '');
+            })
+            ->addColumn('actions', function ($role) {
+                $actions = '<div class="dropdown">';
+                $actions .= '<button class="btn btn-sm btn-icon-only text-dark mb-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">';
+                $actions .= '<i class="fa fa-ellipsis-v"></i>';
+                $actions .= '</button>';
+                $actions .= '<ul class="dropdown-menu dropdown-menu-end">';
+                
+                if (auth()->user()->can('view-roles')) {
+                    $actions .= '<li><a class="dropdown-item" href="' . route('roles.show', $role->id) . '"><i class="fas fa-eye me-2"></i>View</a></li>';
+                }
+                
+                if (auth()->user()->can('edit-role')) {
+                    $actions .= '<li><a class="dropdown-item" href="' . route('roles.edit', $role->id) . '"><i class="fas fa-edit me-2"></i>Edit</a></li>';
+                }
+                
+                if (auth()->user()->can('delete-role')) {
+                    $actions .= '<li><hr class="dropdown-divider"></li>';
+                    $actions .= '<li><a class="dropdown-item text-danger" href="#" onclick="deleteRole(' . $role->id . ')"><i class="fas fa-trash me-2"></i>Delete</a></li>';
+                }
+                
+                $actions .= '</ul></div>';
+                return $actions;
+            })
+            ->editColumn('created_at', function ($role) {
+                return $role->created_at->format('M d, Y H:i');
+            })
+            ->rawColumns(['actions'])
+            ->make(true);
     }
     
     /**
@@ -51,10 +93,22 @@ class RoleController extends Controller
         $this->validate($request, [
             'name' => 'required|unique:roles,name',
             'permissions' => 'required|array',
+            'permissions.*' => 'exists:permissions,id',
         ]);
     
         $role = Role::create(['name' => $request->input('name')]);
-        $role->syncPermissions($request->input('permissions'));
+        
+        // Convert permission IDs to integers to ensure proper data type
+        $permissionIds = array_map('intval', $request->input('permissions'));
+        $role->syncPermissions($permissionIds);
+    
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Role created successfully',
+                'redirect' => route('roles.index')
+            ]);
+        }
     
         return redirect()->route('roles.index')
                         ->with('success', 'Role created successfully');
@@ -115,6 +169,7 @@ class RoleController extends Controller
         $this->validate($request, [
             'name' => 'required',
             'permissions' => 'required|array',
+            'permissions.*' => 'exists:permissions,id',
         ]);
     
         $role = Role::find($id);
@@ -126,8 +181,18 @@ class RoleController extends Controller
         $role->name = $request->input('name');
         $role->save();
     
-        $role->syncPermissions($request->input('permissions'));
-    
+        // Convert permission IDs to integers to ensure proper data type
+        $permissionIds = array_map('intval', $request->input('permissions'));
+        $role->syncPermissions($permissionIds);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Role updated successfully',
+                'redirect' => route('roles.index')
+            ]);
+        }
+
         return redirect()->route('roles.index')
                         ->with('success', 'Role updated successfully');
     }
@@ -138,21 +203,41 @@ class RoleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $role = Role::find($id);
         if (!$role) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Role not found'
+                ], 404);
+            }
             return redirect()->route('roles.index')
                 ->with('error', 'Role not found');
         }
         
         // Check if it's the admin role
         if ($role->name === 'Admin' || $role->name === 'admin') {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot delete the Admin role'
+                ], 422);
+            }
             return redirect()->route('roles.index')
                 ->with('error', 'Cannot delete the Admin role');
         }
         
         $role->delete();
+        
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Role deleted successfully',
+                'redirect' => route('roles.index')
+            ]);
+        }
         
         return redirect()->route('roles.index')
                         ->with('success', 'Role deleted successfully');

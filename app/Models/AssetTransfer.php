@@ -27,6 +27,23 @@ class AssetTransfer extends Model
     ];
 
     /**
+     * Get the validation rules for the asset transfer.
+     */
+    public static function validationRules(): array
+    {
+        return [
+            'asset_id' => 'required|exists:assets,id',
+            'from_location' => 'nullable|string|max:200',
+            'to_location' => 'nullable|string|max:200',
+            'from_user_id' => 'nullable|exists:users,id',
+            'to_user_id' => 'nullable|exists:users,id',
+            'transfer_reason' => 'required|string|max:500',
+            'transfer_date' => 'required|date',
+            'status' => 'required|string|in:pending,completed,cancelled',
+        ];
+    }
+
+    /**
      * Get the asset that was transferred.
      */
     public function asset(): BelongsTo
