@@ -11,17 +11,29 @@ class DatabaseSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
         $this->call([
-
-            UserSeeder::class,
-            AssetTypeSeeder::class,
-            AssetSeeder::class,
-            PeripheralSeeder::class,
-            AssetTransferSeeder::class,
-            PrintLogSeeder::class
+            RolesSeeder::class,
+            PermissionsSeeder::class,
+            RolePermissionsSeeder::class,
+            AdminUserSeeder::class,
+            AssetCategoriesSeeder::class,
+            AssetTypesSeeder::class,
+            ManufacturersSeeder::class,
+            VendorsSeeder::class,
+            DepartmentsSeeder::class,
+            ProjectsSeeder::class,
+            UsersSeeder::class,
+            AssetsSeeder::class,
+            PeripheralsSeeder::class,
         ]);
+
+        // \App\Models\User::factory(10)->create();
+
+        // \App\Models\User::factory()->create([
+        //     'name' => 'Test User',
+        //     'email' => 'test@example.com',
+        // ]);
     }
 }

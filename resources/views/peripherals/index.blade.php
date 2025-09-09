@@ -11,9 +11,27 @@
                         <div>
                             <h5 class="mb-0">Peripherals</h5>
                         </div>
-                        @can('create-peripheral')
-                        <a href="{{ route('peripherals.create') }}" class="btn bg-gradient-primary btn-sm mb-0" type="button">+&nbsp; New Peripheral</a>
-                        @endcan
+                        <div class="d-flex gap-2">
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-download me-1"></i> Export/Import
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{{ route('export.assets', ['module' => 'peripherals']) }}">
+                                        <i class="fas fa-file-excel me-2"></i>Export to Excel
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ route('export.template', ['module' => 'peripherals']) }}">
+                                        <i class="fas fa-download me-2"></i>Download Template
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ route('import.form', ['module' => 'peripherals']) }}">
+                                        <i class="fas fa-upload me-2"></i>Import Peripherals
+                                    </a></li>
+                                </ul>
+                            </div>
+                            @can('create_assets')
+                            <a href="{{ route('peripherals.create') }}" class="btn bg-gradient-primary btn-sm mb-0" type="button">+&nbsp; New Peripheral</a>
+                            @endcan
+                        </div>
                     </div>
                 </div>
                 <div class="card-body px-0 pt-0 pb-2">
@@ -77,7 +95,7 @@ $(document).ready(function() {
         pageLength: 10,
         responsive: true,
         language: {
-            processing: '<div class="d-flex justify-content-center align-items-center"><div class="spinner-border text-primary me-2" role="status"></div><span class="text-primary fw-bold">Loading peripherals...</span></div>',
+            processing: '<div class="d-flex justify-content-center align-items-center"><span class="text-primary fw-bold">Loading peripherals...</span></div>',
             search: 'Search peripherals:',
             searchPlaceholder: 'Type, details, serial number...',
             lengthMenu: 'Display _MENU_ peripherals per page',

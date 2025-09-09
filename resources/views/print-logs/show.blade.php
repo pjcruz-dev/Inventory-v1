@@ -100,6 +100,25 @@
                                             <span class="badge badge-sm bg-gradient-{{ $statusColor }}">{{ ucfirst(str_replace('_', ' ', $printLog->asset->status)) }}</span>
                                         </div>
                                     </div>
+                                    @if($printLog->asset->manufacturer)
+                                    <hr class="horizontal dark">
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <p class="text-sm mb-2"><strong>Manufacturer:</strong></p>
+                                            <p class="text-sm font-weight-bold">{{ $printLog->asset->manufacturer->name }}</p>
+                                        </div>
+                                        @if($printLog->asset->manufacturer->website)
+                                        <div class="col-sm-6">
+                                            <p class="text-sm mb-2"><strong>Website:</strong></p>
+                                            <p class="text-sm font-weight-bold">
+                                                <a href="{{ $printLog->asset->manufacturer->website }}" target="_blank" class="text-primary">
+                                                    {{ $printLog->asset->manufacturer->website }}
+                                                </a>
+                                            </p>
+                                        </div>
+                                        @endif
+                                    </div>
+                                    @endif
                                     @if($printLog->asset->assignedTo)
                                     <hr class="horizontal dark">
                                     <div class="row">

@@ -18,32 +18,21 @@ class InfoUserController extends Controller
 
     public function store(Request $request)
     {
-
-        $attributes = request()->validate([
+        $attributes = $request->validate([
             'name' => ['required', 'max:50'],
             'email' => ['required', 'email', 'max:50', Rule::unique('users')->ignore(Auth::user()->id)],
             'phone'     => ['max:50'],
             'location' => ['max:70'],
             'about_me'    => ['max:150'],
         ]);
-        if($request->get('email') != Auth::user()->email)
-        {
-            // Email validation will be handled below
-        }
-        else{
-            $attribute = request()->validate([
-                'email' => ['required', 'email', 'max:50', Rule::unique('users')->ignore(Auth::user()->id)],
-            ]);
-        }
         
-        
-        User::where('id',Auth::user()->id)
+        User::where('id', Auth::user()->id)
         ->update([
             'name'    => $attributes['name'],
-            'email' => $attribute['email'],
+            'email' => $attributes['email'],
             'phone'     => $attributes['phone'],
             'location' => $attributes['location'],
-            'about_me'    => $attributes["about_me"],
+            'about_me'    => $attributes['about_me'],
         ]);
 
 

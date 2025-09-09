@@ -74,7 +74,7 @@ $(document).ready(function() {
         pageLength: 25,
         responsive: true,
         language: {
-            processing: '<div class="d-flex justify-content-center align-items-center"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>Loading locations...</div>',
+            processing: '<div class="d-flex justify-content-center align-items-center">Loading locations...</div>',
             search: '',
             searchPlaceholder: 'Search locations...',
             lengthMenu: 'Show _MENU_ locations per page',

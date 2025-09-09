@@ -63,12 +63,12 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="name" class="form-control-label text-primary text-xs text-uppercase font-weight-bold">Name <span class="text-danger">*</span></label>
-                                <div class="input-group @error('name') border border-danger rounded-3 @enderror">
-                                    <span class="input-group-text"><i class="fas fa-laptop"></i></span>
-                                    <input class="form-control" type="text" placeholder="Dell XPS 15" id="name" name="name" value="{{ old('name', $asset->name) }}" required>
+                                <label for="site_id" class="form-control-label text-primary text-xs text-uppercase font-weight-bold">Site ID <span class="text-danger">*</span></label>
+                                <div class="input-group @error('site_id') border border-danger rounded-3 @enderror">
+                                    <span class="input-group-text"><i class="fas fa-building"></i></span>
+                                    <input class="form-control" type="text" placeholder="SITE-001" id="site_id" name="site_id" value="{{ old('site_id', $asset->site_id) }}" required>
                                 </div>
-                                @error('name')
+                                @error('site_id')
                                     <p class="text-danger text-xs mt-2"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</p>
                                 @enderror
                             </div>
@@ -94,12 +94,99 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
+                                <label for="qr_code" class="form-control-label text-primary text-xs text-uppercase font-weight-bold">QR Code <span class="text-danger">*</span></label>
+                                <div class="input-group @error('qr_code') border border-danger rounded-3 @enderror">
+                                    <span class="input-group-text"><i class="fas fa-qrcode"></i></span>
+                                    <input class="form-control" type="text" placeholder="QR123456" id="qr_code" name="qr_code" value="{{ old('qr_code', $asset->qr_code) }}" required>
+                                </div>
+                                @error('qr_code')
+                                    <p class="text-danger text-xs mt-2"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="operator" class="form-control-label text-primary text-xs text-uppercase font-weight-bold">Operator</label>
+                                <div class="input-group @error('operator') border border-danger rounded-3 @enderror">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <select class="form-control" id="operator" name="operator">
+                                        <option value="">Select Operator</option>
+                                        @foreach($users as $user)
+                                            <option value="{{ $user->name }}" {{ old('operator', $asset->operator) == $user->name ? 'selected' : '' }}>
+                                                {{ $user->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                @error('operator')
+                                    <p class="text-danger text-xs mt-2"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="manufacturer_id" class="form-control-label text-primary text-xs text-uppercase font-weight-bold">Manufacturer</label>
+                                <div class="input-group @error('manufacturer_id') border border-danger rounded-3 @enderror">
+                                    <span class="input-group-text"><i class="fas fa-industry"></i></span>
+                                    <select class="form-control" id="manufacturer_id" name="manufacturer_id">
+                                        <option value="">Select Manufacturer</option>
+                                        @foreach($manufacturers as $manufacturer)
+                                            <option value="{{ $manufacturer->id }}" {{ old('manufacturer_id', $asset->manufacturer_id) == $manufacturer->id ? 'selected' : '' }}>
+                                                {{ $manufacturer->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                @error('manufacturer_id')
+                                    <p class="text-danger text-xs mt-2"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</p>
+                                @enderror
+                                <small class="text-muted">Don't see your manufacturer? <a href="{{ route('manufacturers.create') }}" target="_blank">Add new manufacturer</a></small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="model" class="form-control-label text-primary text-xs text-uppercase font-weight-bold">Model <span class="text-danger">*</span></label>
+                                <div class="input-group @error('model') border border-danger rounded-3 @enderror">
+                                    <span class="input-group-text"><i class="fas fa-laptop"></i></span>
+                                    <input class="form-control" type="text" placeholder="XPS 15" id="model" name="model" value="{{ old('model', $asset->model) }}" required>
+                                </div>
+                                @error('model')
+                                    <p class="text-danger text-xs mt-2"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
                                 <label for="serial_number" class="form-control-label text-primary text-xs text-uppercase font-weight-bold">Serial Number</label>
                                 <div class="input-group @error('serial_number') border border-danger rounded-3 @enderror">
                                     <span class="input-group-text"><i class="fas fa-barcode"></i></span>
                                     <input class="form-control" type="text" placeholder="SN12345678" id="serial_number" name="serial_number" value="{{ old('serial_number', $asset->serial_number) }}">
                                 </div>
                                 @error('serial_number')
+                                    <p class="text-danger text-xs mt-2"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="asset_owner" class="form-control-label text-primary text-xs text-uppercase font-weight-bold">Asset Owner <span class="text-danger">*</span></label>
+                                <div class="input-group @error('asset_owner') border border-danger rounded-3 @enderror">
+                                    <span class="input-group-text"><i class="fas fa-user-tie"></i></span>
+                                    <input class="form-control" type="text" placeholder="IT Department" id="asset_owner" name="asset_owner" value="{{ old('asset_owner', $asset->asset_owner) }}" required>
+                                </div>
+                                @error('asset_owner')
+                                    <p class="text-danger text-xs mt-2"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="warranty_vendor" class="form-control-label text-primary text-xs text-uppercase font-weight-bold">Warranty Vendor</label>
+                                <div class="input-group @error('warranty_vendor') border border-danger rounded-3 @enderror">
+                                    <span class="input-group-text"><i class="fas fa-shield-alt"></i></span>
+                                    <input class="form-control" type="text" placeholder="Dell Support" id="warranty_vendor" name="warranty_vendor" value="{{ old('warranty_vendor', $asset->warranty_vendor) }}">
+                                </div>
+                                @error('warranty_vendor')
                                     <p class="text-danger text-xs mt-2"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</p>
                                 @enderror
                             </div>

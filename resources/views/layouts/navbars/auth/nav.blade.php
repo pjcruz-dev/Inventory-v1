@@ -11,8 +11,9 @@
         <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4 d-flex justify-content-end" id="navbar"> 
             <div class="ms-md-3 pe-md-3 d-flex align-items-center position-relative">
                 <div class="input-group global-search-container">
-                    <span class="input-group-text text-body"><i class="fas fa-search" aria-hidden="true"></i></span>
+                    <span class="input-group-text text-body border-0 bg-transparent"><i class="fas fa-search" aria-hidden="true"></i></span>
                     <input type="text" class="form-control global-search-input" placeholder="Search across all modules..." id="globalSearchInput" autocomplete="off">
+                    <span class="search-shortcut-hint">Ctrl+K</span>
                     <div class="global-search-dropdown" id="globalSearchDropdown" style="display: none;">
                         <div class="search-loading" id="searchLoading" style="display: none;">
                             <div class="d-flex align-items-center justify-content-center p-3">
@@ -60,7 +61,7 @@
                     <a class="dropdown-item border-radius-md" href="javascript:;">
                     <div class="d-flex py-1">
                         <div class="my-auto">
-                        <img src="{{ asset('assets/img/team-2.jpg') }}" class="avatar avatar-sm  me-3 ">
+                        <img src="../assets/img/team-2.jpg" class="avatar avatar-sm  me-3 ">
                         </div>
                         <div class="d-flex flex-column justify-content-center">
                         <h6 class="text-sm font-weight-normal mb-1">
@@ -78,7 +79,7 @@
                     <a class="dropdown-item border-radius-md" href="javascript:;">
                     <div class="d-flex py-1">
                         <div class="my-auto">
-                        <img src="{{ asset('assets/img/small-logos/logo-spotify.svg') }}" class="avatar avatar-sm bg-gradient-dark  me-3 ">
+                        <img src="../assets/img/small-logos/logo-spotify.svg" class="avatar avatar-sm bg-gradient-dark  me-3 ">
                         </div>
                         <div class="d-flex flex-column justify-content-center">
                         <h6 class="text-sm font-weight-normal mb-1">

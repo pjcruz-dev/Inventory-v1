@@ -20,7 +20,7 @@
                 <a href="{{ route('asset-types.index') }}" class="btn btn-sm btn-dark">
                     <i class="fas fa-arrow-left me-1"></i> Back to List
                 </a>
-                @can('edit-asset-type')
+                @can('edit_assets')
                 <a href="{{ route('asset-types.edit', $assetType) }}" class="btn btn-sm btn-info">
                     <i class="fas fa-edit me-1"></i> Edit
                 </a>
@@ -113,7 +113,7 @@
                         @else
                             <div class="text-center py-4">
                                 <p class="text-sm mb-0">No assets found for this type</p>
-                                @can('create-asset')
+                                @can('create_assets')
                                 <a href="{{ route('assets.create', ['asset_type_id' => $assetType->id]) }}" class="btn btn-sm btn-outline-primary mt-3">
                                     <i class="fas fa-plus me-1"></i> Add Asset
                                 </a>

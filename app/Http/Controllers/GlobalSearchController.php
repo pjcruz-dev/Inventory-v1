@@ -35,16 +35,19 @@ class GlobalSearchController extends Controller
         $users = User::where('name', 'LIKE', "%{$query}%")
             ->orWhere('email', 'LIKE', "%{$query}%")
             ->limit(5)
-            ->get(['id', 'name', 'email']);
+            ->get(['id', 'name', 'email', 'created_at']);
         
         foreach ($users as $user) {
             $results[] = [
                 'type' => 'user',
-                'title' => $user->name,
-                'subtitle' => $user->email,
+                'title' => $this->highlightMatch($user->name, $query),
+                'subtitle' => $this->highlightMatch($user->email, $query),
+                'description' => 'User since ' . $user->created_at->format('M Y'),
                 'url' => route('user-management'),
                 'icon' => 'fas fa-user',
-                'module' => 'Users'
+                'module' => 'Users',
+                'badge' => 'Active',
+                'badge_color' => 'success'
             ];
         }
 
@@ -52,17 +55,23 @@ class GlobalSearchController extends Controller
         $assets = Asset::where('name', 'LIKE', "%{$query}%")
             ->orWhere('serial_number', 'LIKE', "%{$query}%")
             ->orWhere('asset_tag', 'LIKE', "%{$query}%")
+            ->with(['assetType', 'location'])
             ->limit(5)
-            ->get(['id', 'name', 'serial_number', 'asset_tag', 'status']);
+            ->get(['id', 'name', 'serial_number', 'asset_tag', 'status', 'asset_type_id', 'location_id']);
         
         foreach ($assets as $asset) {
+            $statusColor = $this->getStatusColor($asset->status);
             $results[] = [
                 'type' => 'asset',
-                'title' => $asset->name,
-                'subtitle' => 'Tag: ' . $asset->asset_tag . ' - Status: ' . ucfirst($asset->status),
+                'title' => $this->highlightMatch($asset->name, $query),
+                'subtitle' => 'Tag: ' . $this->highlightMatch($asset->asset_tag, $query),
+                'description' => ($asset->assetType ? $asset->assetType->name : 'Unknown Type') . 
+                               ($asset->location ? ' • ' . $asset->location->name : ''),
                 'url' => route('assets.index'),
                 'icon' => 'fas fa-laptop',
-                'module' => 'Assets'
+                'module' => 'Assets',
+                'badge' => ucfirst($asset->status),
+                'badge_color' => $statusColor
             ];
         }
 
@@ -151,5 +160,39 @@ class GlobalSearchController extends Controller
             'total' => count($results),
             'query' => $query
         ]);
+    }
+    
+    /**
+     * Highlight search matches in text
+     */
+    private function highlightMatch($text, $query)
+    {
+        if (empty($query) || empty($text)) {
+            return $text;
+        }
+        
+        return preg_replace('/(' . preg_quote($query, '/') . ')/i', '<mark>$1</mark>', $text);
+    }
+    
+    /**
+     * Get status color for badges
+     */
+    private function getStatusColor($status)
+    {
+        switch (strtolower($status)) {
+            case 'active':
+            case 'available':
+                return 'success';
+            case 'maintenance':
+            case 'pending':
+                return 'warning';
+            case 'retired':
+            case 'damaged':
+                return 'danger';
+            case 'assigned':
+                return 'info';
+            default:
+                return 'secondary';
+        }
     }
 }

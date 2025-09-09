@@ -31,6 +31,8 @@
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
   <!-- Custom DataTable Styling -->
   <link rel="stylesheet" href="{{ asset('assets/css/datatable-custom.css') }}">
+  <!-- Custom Theme Colors -->
+  <link rel="stylesheet" href="{{ asset('assets/css/custom-theme.css') }}">
 </head>
 
 <body class="g-sidenav-show  bg-gray-100">
@@ -50,13 +52,13 @@
     </div>
   @endif
     <!--   Core JS Files   -->
-  <script src="{{ asset('assets/js/core/popper.min.js') }}"></script>
-  <script src="{{ asset('assets/js/core/bootstrap.min.js') }}"></script>
-  <script src="{{ asset('assets/js/plugins/perfect-scrollbar.min.js') }}"></script>
-  <script src="{{ asset('assets/js/plugins/smooth-scrollbar.min.js') }}"></script>
-  <script src="{{ asset('assets/js/plugins/fullcalendar.min.js') }}"></script>
-  <script src="{{ asset('assets/js/plugins/chartjs.min.js') }}"></script>
-  <script src="{{ asset('assets/js/plugins/sweetalert.min.js') }}"></script>
+  <script src="../assets/js/core/popper.min.js"></script>
+  <script src="../assets/js/core/bootstrap.min.js"></script>
+  <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
+  <script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
+  <script src="../assets/js/plugins/fullcalendar.min.js"></script>
+  <script src="../assets/js/plugins/chartjs.min.js"></script>
+  <script src="../assets/js/plugins/sweetalert.min.js"></script>
   <script src="{{ asset('assets/js/modal-handler.js') }}"></script>
   <script src="{{ asset('assets/js/global-search.js') }}"></script>
   @stack('dashboard')
@@ -71,7 +73,7 @@
   </script>
 
   <!-- Control Center for Dashboard: parallax effects, scripts for the example pages etc -->
-  <script src="{{ asset('assets/js/soft-ui-dashboard.min.js?v=1.0.3') }}"></script>
+  <script src="../assets/js/soft-ui-dashboard.min.js?v=1.0.3"></script>
   <!-- SweetAlert2 JS -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- jQuery (required for DataTables) -->

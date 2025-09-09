@@ -28,8 +28,24 @@
                             <h5 class="mb-0">All Asset Types</h5>
                             <p class="text-sm mb-0">Manage all asset types in the system</p>
                         </div>
-                        <div class="d-flex">
-                            @can('create-asset-type')
+                        <div class="d-flex gap-2">
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-download me-1"></i> Export/Import
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{{ route('export.assets', ['module' => 'asset_types']) }}">
+                                        <i class="fas fa-file-excel me-2"></i>Export to Excel
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ route('export.template', ['module' => 'asset_types']) }}">
+                                        <i class="fas fa-download me-2"></i>Download Template
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ route('import.form', ['module' => 'asset_types']) }}">
+                                        <i class="fas fa-upload me-2"></i>Import Asset Types
+                                    </a></li>
+                                </ul>
+                            </div>
+                            @can('create_assets')
                             <a href="{{ route('asset-types.create') }}" class="btn bg-gradient-primary btn-sm mb-0">
                                 <i class="fas fa-plus me-2"></i>New Asset Type
                             </a>
@@ -105,7 +121,7 @@ $(document).ready(function() {
         pageLength: 25,
         responsive: true,
         language: {
-            processing: '<div class="d-flex justify-content-center align-items-center"><div class="spinner-border text-primary me-2" role="status"></div><span class="text-primary fw-bold">Loading asset types...</span></div>',
+            processing: '<div class="d-flex justify-content-center align-items-center"><span class="text-primary fw-bold">Loading asset types...</span></div>',
             search: "Search asset types:",
             searchPlaceholder: "Type name, description...",
             lengthMenu: "Display _MENU_ asset types per page",

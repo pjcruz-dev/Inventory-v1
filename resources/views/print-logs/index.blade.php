@@ -65,7 +65,7 @@ $(document).ready(function() {
         pageLength: 10,
         responsive: true,
         language: {
-            processing: '<div class="d-flex justify-content-center align-items-center"><div class="spinner-border text-primary me-2" role="status"></div><span class="text-primary fw-bold">Loading print logs...</span></div>',
+            processing: '<div class="d-flex justify-content-center align-items-center"><span class="text-primary fw-bold">Loading print logs...</span></div>',
             search: 'Search print logs:',
             searchPlaceholder: 'Asset, user, date...',
             lengthMenu: 'Display _MENU_ print logs per page',

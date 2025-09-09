@@ -3,7 +3,7 @@
   <div class="sidenav-header">
     <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
     <a class="align-items-center d-flex m-0 navbar-brand text-wrap" href="{{ route('dashboard') }}">
-        <img src="{{ asset('assets/img/logo-ct.png') }}" class="navbar-brand-img h-100" alt="...">
+        <img src="../assets/img/logo-ct.png" class="navbar-brand-img h-100" alt="...">
         <span class="ms-3 font-weight-bold">Inventory V1</span>
     </a>
   </div>
@@ -50,11 +50,51 @@
         </a>
       </li>
       <li class="nav-item">
+        <a class="nav-link {{ (Request::is('asset-categories*') ? 'active' : '') }}" href="{{ route('asset-categories.index') }}">
+          <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i style="font-size: 1rem;" class="fas fa-lg fa-layer-group ps-2 pe-2 text-center text-dark {{ (Request::is('asset-categories*') ? 'text-white' : 'text-dark') }}" aria-hidden="true"></i>
+          </div>
+          <span class="nav-link-text ms-1">Asset Categories</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {{ (Request::is('manufacturers*') ? 'active' : '') }}" href="{{ route('manufacturers.index') }}">
+          <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i style="font-size: 1rem;" class="fas fa-lg fa-industry ps-2 pe-2 text-center text-dark {{ (Request::is('manufacturers*') ? 'text-white' : 'text-dark') }}" aria-hidden="true"></i>
+          </div>
+          <span class="nav-link-text ms-1">Manufacturers</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {{ (Request::is('vendors*') ? 'active' : '') }}" href="{{ route('vendors.index') }}">
+          <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i style="font-size: 1rem;" class="fas fa-lg fa-store ps-2 pe-2 text-center text-dark {{ (Request::is('vendors*') ? 'text-white' : 'text-dark') }}" aria-hidden="true"></i>
+          </div>
+          <span class="nav-link-text ms-1">Vendors</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {{ (Request::is('locations*') ? 'active' : '') }}" href="{{ route('locations.index') }}">
+          <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i style="font-size: 1rem;" class="fas fa-lg fa-map-marker-alt ps-2 pe-2 text-center text-dark {{ (Request::is('locations*') ? 'text-white' : 'text-dark') }}" aria-hidden="true"></i>
+          </div>
+          <span class="nav-link-text ms-1">Locations</span>
+        </a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link {{ (Request::is('assets*') ? 'active' : '') }}" href="{{ route('assets.index') }}">
           <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
             <i style="font-size: 1rem;" class="fas fa-lg fa-laptop ps-2 pe-2 text-center text-dark {{ (Request::is('assets*') ? 'text-white' : 'text-dark') }}" aria-hidden="true"></i>
           </div>
           <span class="nav-link-text ms-1">Assets</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {{ (Request::is('my-assets') ? 'active' : '') }}" href="{{ route('assets.my-assets') }}">
+          <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i style="font-size: 1rem;" class="fas fa-lg fa-user-laptop ps-2 pe-2 text-center text-dark {{ (Request::is('my-assets') ? 'text-white' : 'text-dark') }}" aria-hidden="true"></i>
+          </div>
+          <span class="nav-link-text ms-1">My Assets</span>
         </a>
       </li>
       <li class="nav-item">
@@ -97,6 +137,52 @@
           <span class="nav-link-text ms-1">Import/Export</span>
         </a>
       </li>
+
+      <li class="nav-item mt-2">
+        <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Organization</h6>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {{ (Request::is('departments*') ? 'active' : '') }}" href="{{ route('departments.index') }}">
+          <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i style="font-size: 1rem;" class="fas fa-lg fa-building ps-2 pe-2 text-center text-dark {{ (Request::is('departments*') ? 'text-white' : 'text-dark') }}" aria-hidden="true"></i>
+          </div>
+          <span class="nav-link-text ms-1">Departments</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {{ (Request::is('projects*') ? 'active' : '') }}" href="{{ route('projects.index') }}">
+          <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i style="font-size: 1rem;" class="fas fa-lg fa-project-diagram ps-2 pe-2 text-center text-dark {{ (Request::is('projects*') ? 'text-white' : 'text-dark') }}" aria-hidden="true"></i>
+          </div>
+          <span class="nav-link-text ms-1">Projects</span>
+        </a>
+      </li>
+
+      <li class="nav-item mt-2">
+        <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">System</h6>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {{ (Request::is('logs*') ? 'active' : '') }}" href="{{ route('logs.index') }}">
+          <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i style="font-size: 1rem;" class="fas fa-lg fa-file-alt ps-2 pe-2 text-center text-dark {{ (Request::is('logs*') ? 'text-white' : 'text-dark') }}" aria-hidden="true"></i>
+          </div>
+          <span class="nav-link-text ms-1">System Logs</span>
+        </a>
+      </li>
+
+      @can('admin')
+      <li class="nav-item mt-3">
+        <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Administration</h6>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {{ (Request::is('settings*') ? 'active' : '') }}" href="{{ route('settings.index') }}">
+          <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i style="font-size: 1rem;" class="fas fa-lg fa-cogs ps-2 pe-2 text-center text-dark {{ (Request::is('settings*') ? 'text-white' : 'text-dark') }}" aria-hidden="true"></i>
+          </div>
+          <span class="nav-link-text ms-1">Settings</span>
+        </a>
+      </li>
+      @endcan
 
       <li class="nav-item mt-3">
         <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Account pages</h6>

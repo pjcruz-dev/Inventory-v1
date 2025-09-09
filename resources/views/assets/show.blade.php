@@ -21,18 +21,18 @@
                     <a href="{{ route('assets.index') }}" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-arrow-left me-1"></i> Back
                     </a>
-                    @can('update-asset')
+                    @can('edit_assets')
                     <a href="{{ route('assets.edit', $asset->id) }}" class="btn btn-sm btn-info">
                         <i class="fas fa-edit me-1"></i> Edit
                     </a>
                     @endcan
-                    @can('print-asset')
+                    @can('view_assets')
                     <a href="{{ route('assets.print', $asset->id) }}" class="btn btn-sm btn-secondary">
                         <i class="fas fa-print me-1"></i> Print
                     </a>
                     @endcan
                     @if($asset->status != 'Assigned')
-                    @can('create-asset-transfer')
+                    @can('transfer_assets')
                     <a href="{{ route('asset-transfers.create', ['asset_id' => $asset->id]) }}" class="btn btn-sm btn-primary">
                         <i class="fas fa-exchange-alt me-1"></i> Transfer
                     </a>
@@ -78,14 +78,56 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <div class="form-group">
+                                    <label class="form-control-label text-primary text-xs text-uppercase font-weight-bold">Site ID</label>
+                                    <p class="text-dark font-weight-bold text-sm mb-0">{{ $asset->site_id ?? 'N/A' }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label class="form-control-label text-primary text-xs text-uppercase font-weight-bold">QR Code</label>
+                                    <p class="text-dark font-weight-bold text-sm mb-0">
+                                        @if($asset->qr_code)
+                                            <span class="badge badge-sm bg-gradient-info">{{ $asset->qr_code }}</span>
+                                        @else
+                                            <span class="text-secondary">N/A</span>
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label class="form-control-label text-primary text-xs text-uppercase font-weight-bold">Manufacturer</label>
+                                    <p class="text-dark font-weight-bold text-sm mb-0">{{ $asset->manufacturer ? $asset->manufacturer->name : 'N/A' }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label class="form-control-label text-primary text-xs text-uppercase font-weight-bold">Model</label>
+                                    <p class="text-dark font-weight-bold text-sm mb-0">{{ $asset->model ?? 'N/A' }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
                                     <label class="form-control-label text-primary text-xs text-uppercase font-weight-bold">Serial Number</label>
                                     <p class="text-dark font-weight-bold text-sm mb-0">{{ $asset->serial_number ?? 'N/A' }}</p>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <div class="form-group">
-                                    <label class="form-control-label text-primary text-xs text-uppercase font-weight-bold">Location</label>
-                                    <p class="text-dark font-weight-bold text-sm mb-0">{{ $asset->location ?? 'N/A' }}</p>
+                                    <label class="form-control-label text-primary text-xs text-uppercase font-weight-bold">Asset Owner</label>
+                                    <p class="text-dark font-weight-bold text-sm mb-0">{{ $asset->asset_owner ?? 'N/A' }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label class="form-control-label text-primary text-xs text-uppercase font-weight-bold">Operator</label>
+                                    <p class="text-dark font-weight-bold text-sm mb-0">{{ $asset->operator ?? 'N/A' }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label class="form-control-label text-primary text-xs text-uppercase font-weight-bold">Warranty Vendor</label>
+                                    <p class="text-dark font-weight-bold text-sm mb-0">{{ $asset->warranty_vendor ?? 'N/A' }}</p>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -151,7 +193,7 @@
                                 <h6 class="mb-0 font-weight-bold">Peripherals</h6>
                             </div>
                             <div class="col-md-6 d-flex justify-content-end">
-                                @can('create-peripheral')
+                                @can('create_assets')
                                 <a href="{{ route('peripherals.create', ['asset_id' => $asset->id]) }}" class="btn btn-sm btn-primary mb-0">
                                     <i class="fas fa-plus me-1"></i> Add
                                 </a>
