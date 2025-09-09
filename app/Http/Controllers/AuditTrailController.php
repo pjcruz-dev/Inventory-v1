@@ -53,7 +53,7 @@ class AuditTrailController extends Controller
         // Get unique entity types and actions for filtering
         $entityTypes = AuditTrail::distinct()->pluck('entity_type');
         $actions = AuditTrail::distinct()->pluck('action');
-        $users = User::orderBy('name')->get();
+        $users = User::orderBy('first_name')->get();
         
         return view('audit-trail.index', compact(
             'entityTypes', 

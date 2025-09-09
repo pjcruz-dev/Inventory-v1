@@ -16,6 +16,7 @@ class Asset extends Model
         'asset_tag',
         'serial_no',
         'asset_category_id',
+        'asset_type_id',
         'vendor_id',
         'department_id',
         'project_id',
@@ -40,6 +41,14 @@ class Asset extends Model
         'warranty_until' => 'date',
         'cost' => 'decimal:2',
     ];
+
+    /**
+     * Get the asset's display name.
+     */
+    public function getNameAttribute()
+    {
+        return $this->asset_tag . ($this->model ? ' - ' . $this->model : '');
+    }
 
     /**
      * Get the validation rules for the asset.
@@ -178,6 +187,14 @@ class Asset extends Model
     public function assetCategory(): BelongsTo
     {
         return $this->belongsTo(AssetCategory::class);
+    }
+
+    /**
+     * Get the asset type that owns the asset.
+     */
+    public function assetType(): BelongsTo
+    {
+        return $this->belongsTo(AssetType::class);
     }
 
     /**
