@@ -14,6 +14,8 @@ class GlobalSearch {
         this.searchTimeout = null;
         this.minSearchLength = 2;
         this.searchDelay = 300; // milliseconds
+        this.recentSearches = this.loadRecentSearches();
+        this.maxRecentSearches = 5;
         
         this.init();
     }
@@ -29,6 +31,12 @@ class GlobalSearch {
         
         // Close dropdown when clicking outside
         document.addEventListener('click', this.handleDocumentClick.bind(this));
+        
+        // Global keyboard shortcuts
+        document.addEventListener('keydown', this.handleGlobalKeydown.bind(this));
+        
+        // Add search input animations
+        this.addInputAnimations();
     }
     
     handleInput(event) {
@@ -54,6 +62,8 @@ class GlobalSearch {
         const query = event.target.value.trim();
         if (query.length >= this.minSearchLength) {
             this.showDropdown();
+        } else {
+            this.showRecentSearches();
         }
     }
     
@@ -89,6 +99,145 @@ class GlobalSearch {
         }
     }
     
+    handleGlobalKeydown(event) {
+        // Ctrl+K or Cmd+K to focus search
+        if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+            event.preventDefault();
+            this.focusSearch();
+        }
+        
+        // Escape to clear and blur search
+        if (event.key === 'Escape' && document.activeElement === this.searchInput) {
+            this.clearSearch();
+        }
+    }
+    
+    addInputAnimations() {
+        // Add focus/blur animations
+        this.searchInput.addEventListener('focus', () => {
+            this.searchInput.parentElement.classList.add('search-focused');
+        });
+        
+        this.searchInput.addEventListener('blur', () => {
+            setTimeout(() => {
+                if (!this.searchDropdown.matches(':hover')) {
+                    this.searchInput.parentElement.classList.remove('search-focused');
+                }
+            }, 150);
+        });
+    }
+    
+    focusSearch() {
+        this.searchInput.focus();
+        this.searchInput.select();
+    }
+    
+    clearSearch() {
+        this.searchInput.value = '';
+        this.hideDropdown();
+        this.searchInput.blur();
+    }
+    
+    loadRecentSearches() {
+        try {
+            const stored = localStorage.getItem('global_search_recent');
+            return stored ? JSON.parse(stored) : [];
+        } catch (error) {
+            console.warn('Failed to load recent searches:', error);
+            return [];
+        }
+    }
+    
+    saveRecentSearches() {
+        try {
+            localStorage.setItem('global_search_recent', JSON.stringify(this.recentSearches));
+        } catch (error) {
+            console.warn('Failed to save recent searches:', error);
+        }
+    }
+    
+    addToRecentSearches(query) {
+        if (!query || query.length < this.minSearchLength) return;
+        
+        // Remove if already exists
+        this.recentSearches = this.recentSearches.filter(search => search !== query);
+        
+        // Add to beginning
+        this.recentSearches.unshift(query);
+        
+        // Limit to max recent searches
+        this.recentSearches = this.recentSearches.slice(0, this.maxRecentSearches);
+        
+        this.saveRecentSearches();
+    }
+    
+    showRecentSearches() {
+        if (this.recentSearches.length === 0) {
+            this.hideDropdown();
+            return;
+        }
+        
+        this.searchResults.innerHTML = '';
+        
+        // Create recent searches header
+        const header = document.createElement('div');
+        header.className = 'search-module-header';
+        header.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted font-weight-bold">Recent Searches</small>
+                <button class="btn btn-link btn-sm p-0 text-muted" id="clear-recent-searches">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        this.searchResults.appendChild(header);
+        
+        // Add recent searches
+        this.recentSearches.forEach(query => {
+            const recentItem = document.createElement('div');
+            recentItem.className = 'search-result-item recent-search-item';
+            recentItem.innerHTML = `
+                <div class="search-result-link" data-query="${query}">
+                    <div class="d-flex align-items-center">
+                        <div class="search-result-icon me-3">
+                            <i class="fas fa-history text-muted"></i>
+                        </div>
+                        <div class="search-result-content flex-grow-1">
+                            <div class="search-result-title">${query}</div>
+                        </div>
+                        <div class="search-result-arrow">
+                            <i class="fas fa-arrow-up-left text-muted"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            recentItem.addEventListener('click', () => {
+                this.searchInput.value = query;
+                this.performSearch(query);
+            });
+            
+            this.searchResults.appendChild(recentItem);
+        });
+        
+        // Add clear recent searches handler
+        const clearBtn = document.getElementById('clear-recent-searches');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.clearRecentSearches();
+            });
+        }
+        
+        this.showDropdown();
+    }
+    
+    clearRecentSearches() {
+        this.recentSearches = [];
+        this.saveRecentSearches();
+        this.hideDropdown();
+    }
+    
     async performSearch(query) {
         try {
             this.showLoading();
@@ -109,6 +258,11 @@ class GlobalSearch {
             
             const data = await response.json();
             this.displayResults(data.results, query);
+            
+            // Add to recent searches if results found
+            if (data.results && data.results.length > 0) {
+                this.addToRecentSearches(query);
+            }
             
         } catch (error) {
             console.error('Search error:', error);
@@ -168,22 +322,31 @@ class GlobalSearch {
         resultDiv.className = 'search-result-item';
         resultDiv.setAttribute('data-url', result.url);
         
-        // Highlight search term in title and subtitle
-        const highlightedTitle = this.highlightText(result.title, query);
-        const highlightedSubtitle = this.highlightText(result.subtitle, query);
+        // Use the title and subtitle as they come from backend (already highlighted)
+        const title = result.title || '';
+        const subtitle = result.subtitle || '';
+        const description = result.description || '';
+        
+        // Create badge HTML if badge exists
+        const badgeHtml = result.badge ? 
+            `<span class="badge bg-${result.badge_color || 'secondary'} ms-2">${result.badge}</span>` : '';
         
         resultDiv.innerHTML = `
-            <a href="${result.url}" class="d-block p-3 text-decoration-none search-result-link">
+            <a href="${result.url}" class="search-result-link">
                 <div class="d-flex align-items-center">
                     <div class="search-result-icon me-3">
-                        <i class="${result.icon} text-primary"></i>
+                        <i class="${result.icon}"></i>
                     </div>
                     <div class="search-result-content flex-grow-1">
-                        <div class="search-result-title text-dark font-weight-bold">${highlightedTitle}</div>
-                        <div class="search-result-subtitle text-muted small">${highlightedSubtitle}</div>
+                        <div class="search-result-title">
+                            ${title}
+                            ${badgeHtml}
+                        </div>
+                        <div class="search-result-subtitle">${subtitle}</div>
+                        ${description ? `<div class="search-result-description">${description}</div>` : ''}
                     </div>
                     <div class="search-result-arrow">
-                        <i class="fas fa-chevron-right text-muted small"></i>
+                        <i class="fas fa-chevron-right"></i>
                     </div>
                 </div>
             </a>
@@ -195,6 +358,7 @@ class GlobalSearch {
                 event.preventDefault();
                 window.location.href = result.url;
             }
+            this.addToRecentSearches(query);
             this.hideDropdown();
         });
         
@@ -239,6 +403,7 @@ class GlobalSearch {
         if (activeResult) {
             const url = activeResult.getAttribute('data-url');
             if (url) {
+                this.addToRecentSearches(this.searchInput.value.trim());
                 window.location.href = url;
             }
         }

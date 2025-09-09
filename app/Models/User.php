@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -17,12 +19,15 @@ class User extends Authenticatable
      * @var string[]
      */
     protected $fillable = [
-        'name',
+        'employee_no',
+        'first_name',
+        'last_name',
+        'department',
+        'position',
         'email',
         'password',
-        'phone',
-        'location',
-        'about_me',
+        'role_id',
+        'status',
     ];
 
     /**
@@ -49,8 +54,17 @@ class User extends Authenticatable
      */
     public static function validationRules($id = null): array
     {
-        return [
-            'name' => 'required|string|max:255',
+        $rules = [
+            'employee_no' => [
+                'required',
+                'string',
+                'max:50',
+                \Illuminate\Validation\Rule::unique('users')->ignore($id),
+            ],
+            'first_name' => 'required|string|max:100',
+            'last_name' => 'required|string|max:100',
+            'department' => 'required|string|max:100',
+            'position' => 'required|string|max:100',
             'email' => [
                 'required',
                 'string',
@@ -58,11 +72,16 @@ class User extends Authenticatable
                 'max:255',
                 \Illuminate\Validation\Rule::unique('users')->ignore($id),
             ],
-            'password' => $id ? 'nullable|string|min:8|confirmed' : 'required|string|min:8|confirmed',
-            'phone' => 'nullable|string|max:20',
-            'location' => 'nullable|string|max:255',
-            'about_me' => 'nullable|string|max:1000',
+            'role_id' => 'required|exists:roles,id',
+            'status' => 'required|in:Active,Inactive,Resigned',
         ];
+
+        // Only add password validation if this is a new user
+        if (!$id) {
+            $rules['password'] = 'required|string|min:8|confirmed';
+        }
+
+        return $rules;
     }
 
     /**
@@ -122,10 +141,34 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the location that the user belongs to.
+     * Get the role that owns this user.
      */
-    public function locationRelation()
+    public function role(): BelongsTo
     {
-        return $this->belongsTo(Location::class, 'location_id');
+        return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Get the logs that belong to this user.
+     */
+    public function logs(): HasMany
+    {
+        return $this->hasMany(Log::class);
+    }
+
+    /**
+     * Check if user has a specific permission.
+     */
+    public function hasPermission(string $permission): bool
+    {
+        return $this->role && $this->role->hasPermission($permission);
+    }
+
+    /**
+     * Get the user's full name.
+     */
+    public function getFullNameAttribute(): string
+    {
+        return $this->first_name . ' ' . $this->last_name;
     }
 }

@@ -47,7 +47,12 @@
                             <div class="form-group">
                                 <label for="asset_tag" class="form-control-label">Asset Tag <span class="text-danger">*</span></label>
                                 <div class="@error('asset_tag') border border-danger rounded-3 @enderror">
-                                    <input class="form-control" type="text" placeholder="AST-12345" id="asset_tag" name="asset_tag" value="{{ old('asset_tag') }}" required>
+                                    <div class="input-group">
+                                        <input class="form-control" type="text" placeholder="AST-12345" id="asset_tag" name="asset_tag" value="{{ old('asset_tag') }}" required readonly>
+                                        <button class="btn btn-outline-secondary" type="button" id="generateAssetTag">
+                                            <i class="fas fa-sync-alt"></i> Generate
+                                        </button>
+                                    </div>
                                 </div>
                                 @error('asset_tag')
                                     <p class="text-danger text-xs mt-2">{{ $message }}</p>
@@ -56,11 +61,11 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="name" class="form-control-label">Name <span class="text-danger">*</span></label>
-                                <div class="@error('name') border border-danger rounded-3 @enderror">
-                                    <input class="form-control" type="text" placeholder="Dell XPS 15" id="name" name="name" value="{{ old('name') }}" required>
+                                <label for="site_id" class="form-control-label">Site ID <span class="text-danger">*</span></label>
+                                <div class="@error('site_id') border border-danger rounded-3 @enderror">
+                                    <input class="form-control" type="text" placeholder="SITE-001" id="site_id" name="site_id" value="{{ old('site_id') }}" required>
                                 </div>
-                                @error('name')
+                                @error('site_id')
                                     <p class="text-danger text-xs mt-2">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -85,11 +90,92 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
+                                <label for="qr_code" class="form-control-label">QR Code <span class="text-danger">*</span></label>
+                                <div class="@error('qr_code') border border-danger rounded-3 @enderror">
+                                    <input class="form-control" type="text" placeholder="QR12345678" id="qr_code" name="qr_code" value="{{ old('qr_code') }}" required>
+                                </div>
+                                @error('qr_code')
+                                    <p class="text-danger text-xs mt-2">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="operator" class="form-control-label">Operator</label>
+                                <div class="@error('operator') border border-danger rounded-3 @enderror">
+                                    <select class="form-control" id="operator" name="operator">
+                                        <option value="">Select Operator</option>
+                                        @foreach($users as $user)
+                                            <option value="{{ $user->name }}" {{ old('operator') == $user->name ? 'selected' : '' }}>
+                                                {{ $user->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                @error('operator')
+                                    <p class="text-danger text-xs mt-2">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="manufacturer_id" class="form-control-label">Manufacturer</label>
+                                <div class="@error('manufacturer_id') border border-danger rounded-3 @enderror">
+                                    <select class="form-control" id="manufacturer_id" name="manufacturer_id">
+                                        <option value="">Select Manufacturer</option>
+                                        @foreach($manufacturers as $manufacturer)
+                                            <option value="{{ $manufacturer->id }}" {{ old('manufacturer_id') == $manufacturer->id ? 'selected' : '' }}>
+                                                {{ $manufacturer->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                @error('manufacturer_id')
+                                    <p class="text-danger text-xs mt-2">{{ $message }}</p>
+                                @enderror
+                                <small class="text-muted">Don't see your manufacturer? <a href="{{ route('manufacturers.create') }}" target="_blank">Add new manufacturer</a></small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="model" class="form-control-label">Model <span class="text-danger">*</span></label>
+                                <div class="@error('model') border border-danger rounded-3 @enderror">
+                                    <input class="form-control" type="text" placeholder="XPS 15" id="model" name="model" value="{{ old('model') }}" required>
+                                </div>
+                                @error('model')
+                                    <p class="text-danger text-xs mt-2">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
                                 <label for="serial_number" class="form-control-label">Serial Number</label>
                                 <div class="@error('serial_number') border border-danger rounded-3 @enderror">
                                     <input class="form-control" type="text" placeholder="SN12345678" id="serial_number" name="serial_number" value="{{ old('serial_number') }}">
                                 </div>
                                 @error('serial_number')
+                                    <p class="text-danger text-xs mt-2">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="asset_owner" class="form-control-label">Asset Owner <span class="text-danger">*</span></label>
+                                <div class="@error('asset_owner') border border-danger rounded-3 @enderror">
+                                    <input class="form-control" type="text" placeholder="IT Department" id="asset_owner" name="asset_owner" value="{{ old('asset_owner') }}" required>
+                                </div>
+                                @error('asset_owner')
+                                    <p class="text-danger text-xs mt-2">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="warranty_vendor" class="form-control-label">Warranty Vendor</label>
+                                <div class="@error('warranty_vendor') border border-danger rounded-3 @enderror">
+                                    <input class="form-control" type="text" placeholder="Dell Support" id="warranty_vendor" name="warranty_vendor" value="{{ old('warranty_vendor') }}">
+                                </div>
+                                @error('warranty_vendor')
                                     <p class="text-danger text-xs mt-2">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -195,11 +281,13 @@
 </div>
 
 <script>
-    // Show/hide assigned_to field based on status
     document.addEventListener('DOMContentLoaded', function() {
         const statusSelect = document.getElementById('status');
         const assignedToGroup = document.getElementById('assigned_to').closest('.form-group');
+        const generateBtn = document.getElementById('generateAssetTag');
+        const assetTagInput = document.getElementById('asset_tag');
         
+        // Show/hide assigned_to field based on status
         function toggleAssignedTo() {
             if (statusSelect.value === 'Assigned') {
                 assignedToGroup.style.display = 'block';
@@ -210,11 +298,26 @@
             }
         }
         
+        // Generate asset tag
+        function generateAssetTag() {
+            const prefix = 'AST';
+            const timestamp = Date.now().toString().slice(-6);
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            const assetTag = `${prefix}-${timestamp}${random}`;
+            assetTagInput.value = assetTag;
+        }
+        
         // Initial state
         toggleAssignedTo();
         
-        // On change
+        // Generate initial asset tag
+        if (!assetTagInput.value) {
+            generateAssetTag();
+        }
+        
+        // Event listeners
         statusSelect.addEventListener('change', toggleAssignedTo);
+        generateBtn.addEventListener('click', generateAssetTag);
     });
 </script>
 

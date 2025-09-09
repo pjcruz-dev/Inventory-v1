@@ -22,12 +22,12 @@
                         <i class="fas fa-arrow-left me-1"></i> Back to List
                     </a>
                     @if($assetTransfer->status == 'Pending')
-                        @can('update-asset-transfer')
+                        @can('transfer_assets')
                         <a href="{{ route('asset-transfers.edit', $assetTransfer->id) }}" class="btn btn-sm btn-info">
                             <i class="fas fa-edit me-1"></i> Edit
                         </a>
                         @endcan
-                        @can('complete-asset-transfer')
+                        @can('transfer_assets')
                         <a href="{{ route('asset-transfers.complete', $assetTransfer->id) }}" class="btn btn-sm btn-success">
                             <i class="fas fa-check me-1"></i> Complete
                         </a>

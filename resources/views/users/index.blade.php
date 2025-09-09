@@ -28,9 +28,33 @@
                             <h5 class="mb-0">All Users</h5>
                             <p class="text-sm mb-0">Manage all system users and their access levels</p>
                         </div>
-                        <a href="{{ route('users.create') }}" class="btn bg-gradient-primary btn-sm mb-0">
-                            <i class="fas fa-plus me-2"></i>New User
-                        </a>
+                        <div class="d-flex gap-2">
+                            @can('export_data')
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-download me-1"></i> Export/Import
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{{ route('export.assets', ['module' => 'users']) }}">
+                                        <i class="fas fa-file-excel me-2"></i>Export to Excel
+                                    </a></li>
+                                    @can('import_data')
+                                    <li><a class="dropdown-item" href="{{ route('export.template', ['module' => 'users']) }}">
+                                        <i class="fas fa-download me-2"></i>Download Template
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ route('import.form', ['module' => 'users']) }}">
+                                        <i class="fas fa-upload me-2"></i>Import Users
+                                    </a></li>
+                                    @endcan
+                                </ul>
+                            </div>
+                            @endcan
+                            @can('create_users')
+                            <a href="{{ route('users.create') }}" class="btn bg-gradient-primary btn-sm mb-0">
+                                <i class="fas fa-plus me-2"></i>New User
+                            </a>
+                            @endcan
+                        </div>
                     </div>
                 </div>
                 <div class="card-body px-0 pt-0 pb-2">
@@ -64,9 +88,13 @@
                                         Email
                                     </th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
-                                        Location
+                                        Department
                                     </th>
-                                    
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                        Role
+                                    </th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                        Status
                                     </th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
                                         Created At
@@ -97,10 +125,11 @@ $(document).ready(function() {
         ajax: '{{ route('users.index') }}',
         columns: [
             { data: 'id', name: 'id' },
-            { data: 'name', name: 'name' },
+            { data: 'full_name', name: 'full_name' },
             { data: 'email', name: 'email' },
-            { data: 'location', name: 'location' },
-
+            { data: 'department', name: 'department' },
+            { data: 'role', name: 'role' },
+            { data: 'status', name: 'status' },
             { data: 'created_at', name: 'created_at' },
             { data: 'actions', name: 'actions', orderable: false, searchable: false }
         ],
@@ -108,7 +137,7 @@ $(document).ready(function() {
         pageLength: 10,
         responsive: true,
         language: {
-            processing: '<div class="d-flex justify-content-center align-items-center"><div class="spinner-border text-primary me-2" role="status"></div><span class="text-primary fw-bold">Loading users...</span></div>',
+            processing: '<div class="d-flex justify-content-center align-items-center"><span class="text-primary fw-bold">Loading users...</span></div>',
             search: 'Search users:',
             searchPlaceholder: 'Name, email, location...',
             lengthMenu: 'Display _MENU_ users per page',

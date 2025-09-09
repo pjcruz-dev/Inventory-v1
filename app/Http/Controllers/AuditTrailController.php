@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AuditTrail;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class AuditTrailController extends Controller
 {
@@ -18,55 +19,46 @@ class AuditTrailController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->input('search', '');
-        $entityType = $request->input('entity_type', '');
-        $action = $request->input('action', '');
-        $performedBy = $request->input('performed_by', '');
-        $dateFrom = $request->input('date_from', '');
-        $dateTo = $request->input('date_to', '');
+        if ($request->ajax()) {
+            $auditTrails = AuditTrail::with('performer')->select('audit_trails.*');
+            
+            return DataTables::of($auditTrails)
+                ->addColumn('entity_info', function ($auditTrail) {
+                    return ucfirst(str_replace('_', ' ', $auditTrail->entity_type)) . ' (ID: ' . $auditTrail->entity_id . ')';
+                })
+                ->addColumn('action_badge', function ($auditTrail) {
+                    $actionColors = [
+                        'created' => 'success',
+                        'updated' => 'warning',
+                        'deleted' => 'danger',
+                        'transferred' => 'info',
+                        'printed' => 'primary'
+                    ];
+                    $actionColor = $actionColors[$auditTrail->action] ?? 'primary';
+                    return '<span class="badge badge-sm bg-gradient-' . $actionColor . '">' . $auditTrail->action . '</span>';
+                })
+                ->addColumn('performer_name', function ($auditTrail) {
+                    return $auditTrail->performer ? $auditTrail->performer->name : 'System';
+                })
+                ->addColumn('action', function ($auditTrail) {
+                    return '<a href="' . route('audit-trail.show', $auditTrail->id) . '" class="btn btn-sm btn-outline-info" title="View Details"><i class="fas fa-eye"></i></a>';
+                })
+                ->editColumn('performed_at', function ($auditTrail) {
+                    return $auditTrail->performed_at->format('M d, Y H:i:s');
+                })
+                ->rawColumns(['action_badge', 'action'])
+                ->make(true);
+        }
         
-        $auditTrails = AuditTrail::with('performer')
-            ->when($search, function ($query, $search) {
-                return $query->where(function($q) use ($search) {
-                    $q->where('entity_type', 'like', "%{$search}%")
-                      ->orWhere('action', 'like', "%{$search}%")
-                      ->orWhere('note', 'like', "%{$search}%");
-                });
-            })
-            ->when($entityType, function ($query, $entityType) {
-                return $query->where('entity_type', $entityType);
-            })
-            ->when($action, function ($query, $action) {
-                return $query->where('action', $action);
-            })
-            ->when($performedBy, function ($query, $performedBy) {
-                return $query->where('performed_by', $performedBy);
-            })
-            ->when($dateFrom, function ($query, $dateFrom) {
-                return $query->whereDate('performed_at', '>=', $dateFrom);
-            })
-            ->when($dateTo, function ($query, $dateTo) {
-                return $query->whereDate('performed_at', '<=', $dateTo);
-            })
-            ->orderBy('performed_at', 'desc')
-            ->paginate(15);
-
         // Get unique entity types and actions for filtering
         $entityTypes = AuditTrail::distinct()->pluck('entity_type');
         $actions = AuditTrail::distinct()->pluck('action');
         $users = User::orderBy('name')->get();
         
         return view('audit-trail.index', compact(
-            'auditTrails', 
             'entityTypes', 
             'actions', 
-            'users', 
-            'search', 
-            'entityType', 
-            'action', 
-            'performedBy',
-            'dateFrom',
-            'dateTo'
+            'users'
         ));
     }
 

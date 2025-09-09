@@ -10,7 +10,7 @@ class AuditTrail extends Model
 {
     use HasFactory;
 
-    protected $table = 'audit_trail';
+    protected $table = 'audit_trails';
 
     protected $fillable = [
         'entity_type',

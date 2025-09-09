@@ -45,6 +45,11 @@
                                     <li><a class="dropdown-item" href="{{ route('assets.index', ['status' => 'Maintenance']) }}">Maintenance</a></li>
                                     <li><a class="dropdown-item" href="{{ route('assets.index', ['status' => 'Retired']) }}">Retired</a></li>
                                     <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Assigned User</h6></li>
+                                    @foreach($users as $user)
+                                    <li><a class="dropdown-item" href="{{ route('assets.index', ['user_id' => $user->id]) }}">{{ $user->name }}</a></li>
+                                    @endforeach
+                                    <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{{ route('assets.index') }}">Clear Filters</a></li>
                                 </ul>
                             </div>
@@ -53,17 +58,20 @@
                                     <i class="fas fa-file-export me-2"></i>Export/Import
                                 </button>
                                 <ul class="dropdown-menu" aria-labelledby="exportDropdown">
-                                    @can('export-assets')
+                                    @can('export_data')
                                     <li><a class="dropdown-item" href="{{ route('export.assets') }}"><i class="fas fa-file-excel me-2"></i>Export to Excel</a></li>
                                     @endcan
-                                    @can('import-assets')
+                                    @can('import_data')
                                     <li><a class="dropdown-item" href="{{ route('export.template') }}"><i class="fas fa-download me-2"></i>Download Template</a></li>
                                     <li><a class="dropdown-item" href="{{ route('import.form') }}"><i class="fas fa-file-upload me-2"></i>Import Assets</a></li>
                                     @endcan
                                 </ul>
                             </div>
-                            @can('create-asset')
-                            <a href="{{ route('assets.create') }}" class="btn bg-gradient-primary btn-sm mb-0">
+                            <a href="{{ route('assets.my-assets') }}" class="btn bg-gradient-primary btn-sm mb-0 me-2">
+                                <i class="fas fa-user me-2"></i>My Assets
+                            </a>
+                            @can('create_assets')
+                            <a href="{{ route('assets.create') }}" class="btn bg-gradient-dark btn-sm mb-0">
                                 <i class="fas fa-plus me-2"></i>New Asset
                             </a>
                             @endcan
@@ -95,25 +103,25 @@
                                         Asset Tag
                                     </th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
-                                        Name
+                                        Site ID
                                     </th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
-                                        Serial No
-                                    </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
-                                        Model
+                                        QR Code
                                     </th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
                                         Type
                                     </th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                        Manufacturer
+                                    </th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                        Model
+                                    </th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                        Asset Owner
+                                    </th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
                                         Status
-                                    </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
-                                        Location
-                                    </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
-                                        Assigned To
                                     </th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
                                         Actions
@@ -134,23 +142,30 @@ $(document).ready(function() {
     $('#assets-table').DataTable({
         processing: true,
         serverSide: true,
-        ajax: '{{ route('assets.index') }}',
+        ajax: {
+            url: '{{ route('assets.index') }}',
+            data: function(d) {
+                d.user_id = '{{ request('user_id') }}';
+                d.status = '{{ request('status') }}';
+                d.asset_type_id = '{{ request('asset_type_id') }}';
+            }
+        },
         columns: [
             {data: 'asset_tag', name: 'asset_tag'},
-            {data: 'name', name: 'name'},
-            {data: 'serial_no', name: 'serial_no'},
-            {data: 'model', name: 'model'},
+            {data: 'site_id', name: 'site_id'},
+            {data: 'qr_code_display', name: 'qr_code', orderable: false, searchable: false},
             {data: 'asset_type', name: 'asset_type', orderable: false, searchable: false},
+            {data: 'manufacturer_name', name: 'manufacturer_name', orderable: false, searchable: false},
+            {data: 'model', name: 'model'},
+            {data: 'asset_owner', name: 'asset_owner'},
             {data: 'status_badge', name: 'status', orderable: false, searchable: false},
-            {data: 'location', name: 'location'},
-            {data: 'assigned_to', name: 'assigned_to', orderable: false, searchable: false},
             {data: 'actions', name: 'actions', orderable: false, searchable: false}
         ],
         order: [[0, 'desc']],
         pageLength: 25,
         responsive: true,
         language: {
-            processing: '<div class="d-flex justify-content-center align-items-center"><div class="spinner-border text-primary me-2" role="status"></div><span class="text-primary fw-bold">Loading assets...</span></div>',
+            processing: '<div class="d-flex justify-content-center align-items-center"><span class="text-primary fw-bold">Loading assets...</span></div>',
             search: "Search assets:",
             searchPlaceholder: "Asset tag, name, serial, model...",
             lengthMenu: "Display _MENU_ assets per page",

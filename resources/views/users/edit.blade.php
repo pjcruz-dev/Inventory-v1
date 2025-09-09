@@ -48,13 +48,43 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="name" class="form-control-label">Full Name</label>
-                                <div class="@error('name')border border-danger rounded-3 @enderror">
+                                <label for="employee_no" class="form-control-label">Employee Number</label>
+                                <div class="@error('employee_no')border border-danger rounded-3 @enderror">
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-id-badge"></i></span>
+                                        <input class="form-control" type="text" placeholder="Enter employee number" id="employee_no" name="employee_no" value="{{ old('employee_no', $user->employee_no) }}">
+                                    </div>
+                                    @error('employee_no')
+                                        <p class="text-danger text-xs mt-2">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="first_name" class="form-control-label">First Name</label>
+                                <div class="@error('first_name')border border-danger rounded-3 @enderror">
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                        <input class="form-control" type="text" placeholder="Enter full name" id="name" name="name" value="{{ old('name', $user->name) }}">
+                                        <input class="form-control" type="text" placeholder="Enter first name" id="first_name" name="first_name" value="{{ old('first_name', $user->first_name) }}">
                                     </div>
-                                    @error('name')
+                                    @error('first_name')
+                                        <p class="text-danger text-xs mt-2">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="last_name" class="form-control-label">Last Name</label>
+                                <div class="@error('last_name')border border-danger rounded-3 @enderror">
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        <input class="form-control" type="text" placeholder="Enter last name" id="last_name" name="last_name" value="{{ old('last_name', $user->last_name) }}">
+                                    </div>
+                                    @error('last_name')
                                         <p class="text-danger text-xs mt-2">{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -76,6 +106,27 @@
                         </div>
                     </div>
                     <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="role_id" class="form-control-label">Role</label>
+                                <div class="@error('role_id')border border-danger rounded-3 @enderror">
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
+                                        <select class="form-control" id="role_id" name="role_id">
+                                            <option value="">Select a role</option>
+                                            @foreach($roles as $role)
+                                                <option value="{{ $role->id }}" {{ (old('role_id', $user->role_id) == $role->id) ? 'selected' : '' }}>
+                                                    {{ $role->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    @error('role_id')
+                                        <p class="text-danger text-xs mt-2">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="password" class="form-control-label">Password</label>
@@ -106,13 +157,13 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="phone" class="form-control-label">Phone Number</label>
-                                <div class="@error('phone')border border-danger rounded-3 @enderror">
+                                <label for="department" class="form-control-label">Department</label>
+                                <div class="@error('department')border border-danger rounded-3 @enderror">
                                     <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
-                                        <input class="form-control" type="text" placeholder="+1 (555) 123-4567" id="phone" name="phone" value="{{ old('phone', $user->phone) }}">
+                                        <span class="input-group-text"><i class="fas fa-building"></i></span>
+                                        <input class="form-control" type="text" placeholder="Enter department" id="department" name="department" value="{{ old('department', $user->department) }}">
                                     </div>
-                                    @error('phone')
+                                    @error('department')
                                         <p class="text-danger text-xs mt-2">{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -120,29 +171,38 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="location" class="form-control-label">Location</label>
-                                <div class="@error('location')border border-danger rounded-3 @enderror">
+                                <label for="position" class="form-control-label">Position</label>
+                                <div class="@error('position')border border-danger rounded-3 @enderror">
                                     <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
-                                        <input class="form-control" type="text" placeholder="Enter location" id="location" name="location" value="{{ old('location', $user->location) }}">
+                                        <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
+                                        <input class="form-control" type="text" placeholder="Enter position" id="position" name="position" value="{{ old('position', $user->position) }}">
                                     </div>
-                                    @error('location')
+                                    @error('position')
                                         <p class="text-danger text-xs mt-2">{{ $message }}</p>
                                     @enderror
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="about_me">About Me</label>
-                        <div class="@error('about_me')border border-danger rounded-3 @enderror">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-align-left"></i></span>
-                                <textarea class="form-control" id="about_me" rows="3" placeholder="Enter a brief description about the user" name="about_me">{{ old('about_me', $user->about_me) }}</textarea>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="status" class="form-control-label">Status</label>
+                                <div class="@error('status')border border-danger rounded-3 @enderror">
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user-check"></i></span>
+                                        <select class="form-control" id="status" name="status">
+                                            <option value="">Select status</option>
+                                            <option value="Active" {{ old('status', $user->status) == 'Active' ? 'selected' : '' }}>Active</option>
+                                            <option value="Inactive" {{ old('status', $user->status) == 'Inactive' ? 'selected' : '' }}>Inactive</option>
+                                            <option value="Resigned" {{ old('status', $user->status) == 'Resigned' ? 'selected' : '' }}>Resigned</option>
+                                        </select>
+                                    </div>
+                                    @error('status')
+                                        <p class="text-danger text-xs mt-2">{{ $message }}</p>
+                                    @enderror
+                                </div>
                             </div>
-                            @error('about_me')
-                                <p class="text-danger text-xs mt-2">{{ $message }}</p>
-                            @enderror
                         </div>
                     </div>
                     

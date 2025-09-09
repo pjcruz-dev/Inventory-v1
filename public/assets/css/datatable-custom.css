@@ -24,8 +24,8 @@
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-    background: #5e72e4 !important;
-    border-color: #5e72e4 !important;
+    background: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
     color: #fff !important;
 }
 
@@ -91,7 +91,7 @@
 
 .dataTables_wrapper .btn-icon-only:focus {
     outline: none !important;
-    box-shadow: 0 0 0 0.2rem rgba(94, 114, 228, 0.25) !important;
+    box-shadow: 0 0 0 0.2rem rgba(52, 71, 103, 0.25) !important;
 }
 
 .dataTables_wrapper .btn-icon-only i {
@@ -340,9 +340,7 @@
     border-top: none;
 }
 
-.table tbody tr:hover {
-    background-color: #f8f9fc;
-}
+
 
 /* Status Badge Styling */
 .badge {
@@ -378,6 +376,27 @@
 
 .dataTables_wrapper .dropdown {
     z-index: 1000 !important;
+}
+
+/* Prevent DataTable dropdowns from interfering with global search */
+.dataTables_wrapper .dropdown-menu {
+    z-index: 1001 !important;
+    position: absolute !important;
+}
+
+/* Ensure DataTable container doesn't create stacking context issues */
+.dataTables_wrapper {
+    position: relative;
+    z-index: auto;
+}
+
+/* Fix for navbar and global search interaction */
+.navbar .global-search-container {
+    z-index: 1050 !important;
+}
+
+.navbar .global-search-dropdown {
+    z-index: 10000 !important;
 }
 
 /* Fix for button hover states */
@@ -432,4 +451,22 @@
 .dataTables_wrapper .dataTables_info {
     margin-top: 0.25rem;
     margin-bottom: 0;
+}
+
+/* Remove any dots or pseudo-elements from dropdown items */
+.dataTables_wrapper .dropdown-item::before,
+.dataTables_wrapper .dropdown-item::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* Ensure no list-style dots appear */
+.dataTables_wrapper .dropdown-menu li {
+    list-style: none !important;
+}
+
+.dataTables_wrapper .dropdown-menu ul {
+    list-style: none !important;
+    padding-left: 0 !important;
+    margin: 0 !important;
 }

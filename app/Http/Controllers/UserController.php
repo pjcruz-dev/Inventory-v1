@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,9 +34,15 @@ class UserController extends Controller
      */
     private function getUsersDataTable()
     {
-        $users = User::select('users.*');
+        $users = User::with('role')->select('users.*');
 
         return DataTables::of($users)
+            ->addColumn('full_name', function ($user) {
+                return $user->full_name;
+            })
+            ->addColumn('role', function ($user) {
+                return $user->role ? $user->role->name : 'No Role';
+            })
             ->addColumn('actions', function ($user) {
                 $actions = '<div class="dropdown">';
                 $actions .= '<button class="btn btn-sm btn-icon-only text-dark mb-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">';
@@ -57,7 +64,11 @@ class UserController extends Controller
             ->editColumn('created_at', function ($user) {
                 return $user->created_at->format('M d, Y H:i');
             })
-            ->rawColumns(['actions'])
+            ->editColumn('status', function ($user) {
+                $statusClass = $user->status === 'Active' ? 'success' : ($user->status === 'Inactive' ? 'warning' : 'danger');
+                return '<span class="badge bg-gradient-' . $statusClass . '">' . $user->status . '</span>';
+            })
+            ->rawColumns(['actions', 'status'])
             ->make(true);
     }
 
@@ -68,7 +79,8 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('users.create');
+        $roles = Role::all();
+        return view('users.create', compact('roles'));
     }
 
     /**
@@ -118,7 +130,8 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        return view('users.edit', compact('user'));
+        $roles = Role::all();
+        return view('users.edit', compact('user', 'roles'));
     }
 
     /**
@@ -136,9 +149,12 @@ class UserController extends Controller
         // Only update password if provided
         if ($request->filled('password')) {
             $request->validate([
-                'password' => ['min:5', 'max:20'],
+                'password' => ['min:8', 'max:20', 'confirmed'],
             ]);
             $attributes['password'] = Hash::make($request->password);
+        } else {
+            // Remove password from attributes if not provided
+            unset($attributes['password']);
         }
 
         $user->update($attributes);

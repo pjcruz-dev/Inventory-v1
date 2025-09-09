@@ -349,16 +349,16 @@
                         <button type="button" class="btn btn-outline-primary btn-sm mb-0">View Project</button>
                         <div class="avatar-group mt-2">
                           <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Peterson">
-                            <img alt="Image placeholder" src="{{ asset('assets/img/team-4.jpg') }}">
+                            <img alt="Image placeholder" src="../assets/img/team-4.jpg">
                           </a>
                           <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Nick Daniel">
-                            <img alt="Image placeholder" src="{{ asset('assets/img/team-3.jpg') }}">
+                            <img alt="Image placeholder" src="../assets/img/team-3.jpg">
                           </a>
                           <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Milly">
-                            <img alt="Image placeholder" src="{{ asset('assets/img/team-2.jpg') }}">
+                            <img alt="Image placeholder" src="../assets/img/team-2.jpg">
                           </a>
                           <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Elena Morison">
-                            <img alt="Image placeholder" src="{{ asset('assets/img/team-1.jpg') }}">
+                            <img alt="Image placeholder" src="../assets/img/team-1.jpg">
                           </a>
                         </div>
                       </div>

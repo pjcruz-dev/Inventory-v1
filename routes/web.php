@@ -55,12 +55,34 @@ Route::group(['middleware' => 'auth'], function () {
 
 
 	// Asset Management Routes
-	Route::resource('assets', App\Http\Controllers\AssetController::class);
-	Route::resource('asset-types', App\Http\Controllers\AssetTypeController::class);
+    Route::resource('assets', App\Http\Controllers\AssetController::class);
+    Route::get('my-assets', [App\Http\Controllers\AssetController::class, 'myAssets'])->name('assets.my-assets');
+    Route::resource('asset-types', App\Http\Controllers\AssetTypeController::class);
+	Route::resource('manufacturers', App\Http\Controllers\ManufacturerController::class);
 	Route::resource('peripherals', App\Http\Controllers\PeripheralController::class);
 	Route::resource('asset-transfers', App\Http\Controllers\AssetTransferController::class);
 	Route::resource('print-logs', App\Http\Controllers\PrintLogController::class);
 	Route::resource('locations', App\Http\Controllers\LocationController::class);
+
+	// Asset Categories Routes
+	Route::resource('asset-categories', App\Http\Controllers\AssetCategoriesController::class);
+
+	// Vendor Management Routes
+	Route::resource('vendors', App\Http\Controllers\VendorsController::class);
+
+	// Department Management Routes
+	Route::resource('departments', App\Http\Controllers\DepartmentsController::class);
+	Route::get('departments/{department}/hierarchy', [App\Http\Controllers\DepartmentsController::class, 'hierarchy'])->name('departments.hierarchy');
+
+	// Project Management Routes
+	Route::resource('projects', App\Http\Controllers\ProjectsController::class);
+	Route::put('projects/{project}/status', [App\Http\Controllers\ProjectsController::class, 'updateStatus'])->name('projects.update-status');
+	Route::get('projects/{project}/assets', [App\Http\Controllers\ProjectsController::class, 'assets'])->name('projects.assets');
+
+	// System Logs Routes
+	Route::resource('logs', App\Http\Controllers\LogsController::class)->only(['index', 'show']);
+	Route::get('logs/export', [App\Http\Controllers\LogsController::class, 'export'])->name('logs.export');
+	Route::post('logs/clear-old', [App\Http\Controllers\LogsController::class, 'clearOldLogs'])->name('logs.clear-old');
 
 	// Asset Transfer Specific Routes
 	Route::put('asset-transfers/{assetTransfer}/complete', [App\Http\Controllers\AssetTransferController::class, 'completeTransfer'])->name('asset-transfers.complete');
@@ -77,6 +99,28 @@ Route::group(['middleware' => 'auth'], function () {
 	Route::post('import-export/import', [App\Http\Controllers\ImportExportController::class, 'import'])->name('import.process');
 	Route::get('import-export/export', [App\Http\Controllers\ImportExportController::class, 'export'])->name('export.assets');
 	Route::get('import-export/template', [App\Http\Controllers\ImportExportController::class, 'downloadTemplate'])->name('export.template');
+
+	// Settings Routes (Admin Only)
+	Route::middleware(['role:Admin'])->prefix('settings')->name('settings.')->group(function () {
+		Route::get('/', [App\Http\Controllers\SettingsController::class, 'index'])->name('index');
+		Route::get('/roles', [App\Http\Controllers\SettingsController::class, 'roles'])->name('roles');
+		Route::post('/roles', [App\Http\Controllers\SettingsController::class, 'storeRole'])->name('roles.store');
+		Route::put('/roles/{role}/permissions', [App\Http\Controllers\SettingsController::class, 'updateRolePermissions'])->name('roles.permissions');
+		Route::delete('/roles/{role}', [App\Http\Controllers\SettingsController::class, 'destroyRole'])->name('roles.destroy');
+		Route::get('/users', [App\Http\Controllers\SettingsController::class, 'users'])->name('users');
+		Route::put('/users/{user}/role', [App\Http\Controllers\SettingsController::class, 'updateUserRole'])->name('users.role');
+	});
+
+	// API Routes for AJAX requests
+	Route::prefix('api')->group(function () {
+		Route::get('users/{user}/permissions', function($userId) {
+			$user = App\Models\User::with(['role.permissions'])->findOrFail($userId);
+			return response()->json([
+				'role' => $user->role,
+				'permissions' => $user->role ? $user->role->permissions : []
+			]);
+		});
+	});
 
 
 

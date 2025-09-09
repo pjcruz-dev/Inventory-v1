@@ -14,12 +14,12 @@ class RegisterController extends Controller
         return view('session.register');
     }
 
-    public function store()
+    public function store(Request $request)
     {
-        $attributes = request()->validate([
+        $attributes = $request->validate([
             'name' => ['required', 'max:50'],
             'email' => ['required', 'email', 'max:50', Rule::unique('users', 'email')],
-            'password' => ['required', 'min:5', 'max:20'],
+            'password' => ['required', 'min:8', 'max:20'],
             'agreement' => ['accepted']
         ]);
         $attributes['password'] = bcrypt($attributes['password'] );

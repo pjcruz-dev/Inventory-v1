@@ -12,7 +12,7 @@
                             <h5 class="mb-0">Asset Transfers</h5>
                         </div>
 
-                        @can('create-asset-transfer')
+                        @can('transfer_assets')
                         <a href="{{ route('asset-transfers.create') }}" class="btn bg-gradient-primary btn-sm mb-0 ms-3" type="button">+&nbsp; New Transfer</a>
                         @endcan
                     </div>
@@ -75,7 +75,7 @@ $(document).ready(function() {
         pageLength: 25,
         responsive: true,
         language: {
-            processing: '<div class="d-flex justify-content-center align-items-center"><div class="spinner-border text-primary me-2" role="status"></div><span class="text-primary fw-bold">Loading transfers...</span></div>',
+            processing: '<div class="d-flex justify-content-center align-items-center"><span class="text-primary fw-bold">Loading transfers...</span></div>',
             search: "Search asset transfers:",
             searchPlaceholder: "Asset tag, user names, transfer date...",
             lengthMenu: "Display _MENU_ transfers per page",

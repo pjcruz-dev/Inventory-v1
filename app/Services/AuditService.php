@@ -85,7 +85,7 @@ class AuditService
      * @param string|null $note
      * @return AuditTrail
      */
-    private function log(Model $model, string $action, ?array $changes = null, ?string $note = null): AuditTrail
+    public function log(Model $model, string $action, ?array $changes = null, ?string $note = null): AuditTrail
     {
         $entityType = class_basename($model);
         $entityId = $model->id;
