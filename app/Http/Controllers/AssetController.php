@@ -35,7 +35,7 @@ class AssetController extends Controller
         return [
             'assetTypes' => AssetType::orderBy('name')->get(),
             'manufacturers' => Manufacturer::active()->orderBy('name')->get(),
-            'users' => User::orderBy('name')->get(),
+            'users' => User::orderBy('first_name')->get(),
             'statuses' => ['available', 'assigned', 'in_repair', 'disposed']
         ];
     }
