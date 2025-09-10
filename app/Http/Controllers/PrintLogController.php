@@ -71,7 +71,7 @@ class PrintLogController extends Controller
             }
 
             $assets = Asset::with(['assetType', 'assignedTo'])
-                ->orderBy('asset_tag')
+                ->orderBy('name')
                 ->get();
             $printFormats = $this->getPrintFormats();
 

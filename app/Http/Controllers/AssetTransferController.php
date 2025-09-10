@@ -95,7 +95,7 @@ class AssetTransferController extends Controller
     {
         $assetId = $request->input('asset_id');
         $assets = Asset::orderBy('asset_tag')->get();
-        $users = User::orderBy('first_name')->get();
+        $users = User::orderBy('name')->get();
         $statuses = ['pending', 'completed'];
         
         // If asset_id is provided, get the current asset details
@@ -118,9 +118,8 @@ class AssetTransferController extends Controller
             'to_location' => 'nullable|string|max:200',
             'from_user_id' => 'nullable|exists:users,id',
             'to_user_id' => 'nullable|exists:users,id',
-            'transfer_reason' => 'nullable|string|max:500',
-            'transfer_date' => 'required|date',
-            'status' => 'required|in:pending,completed,cancelled',
+            'transfer_reason' => 'nullable|string',
+            'status' => 'required|in:pending,completed',
         ]);
 
         // Get the asset
@@ -200,7 +199,7 @@ class AssetTransferController extends Controller
         }
         
         $assets = Asset::orderBy('asset_tag')->get();
-        $users = User::orderBy('first_name')->get();
+        $users = User::orderBy('name')->get();
         $statuses = ['pending', 'completed', 'cancelled'];
         
         return view('asset-transfers.edit', compact('assetTransfer', 'assets', 'users', 'statuses'));
@@ -222,8 +221,7 @@ class AssetTransferController extends Controller
             'to_location' => 'nullable|string|max:200',
             'from_user_id' => 'nullable|exists:users,id',
             'to_user_id' => 'nullable|exists:users,id',
-            'transfer_reason' => 'nullable|string|max:500',
-            'transfer_date' => 'required|date',
+            'transfer_reason' => 'nullable|string',
             'status' => 'required|in:pending,completed,cancelled',
         ]);
 
